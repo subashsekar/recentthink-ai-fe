@@ -1,6 +1,7 @@
 'use client';
 
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { AdminRoute } from '@/components/auth/AdminRoute';
+import { useMemo } from 'react';
 import { Card } from '@/components/ui/Card';
 import { useAuthStore } from '@/store/authStore';
 
@@ -8,7 +9,7 @@ export default function AdminDashboardPage() {
   const { user } = useAuthStore();
 
   return (
-    <ProtectedRoute requireAdmin>
+    <AdminRoute>
       <div className="mx-auto max-w-4xl space-y-6">
         <div>
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white">Admin Dashboard</h1>
@@ -37,6 +38,6 @@ export default function AdminDashboardPage() {
           </p>
         </Card>
       </div>
-    </ProtectedRoute>
+    </AdminRoute>
   );
 }

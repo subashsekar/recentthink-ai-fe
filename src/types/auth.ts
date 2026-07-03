@@ -1,9 +1,13 @@
+export type Role = 'USER' | 'ADMIN' | 'SUPER_ADMIN';
+
 export interface User {
   id: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  name: string;
-  role: 'user' | 'admin';
+  role: Role;
   is_verified: boolean;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -16,14 +20,15 @@ export interface LoginRequest {
 export interface LoginResponse {
   access_token: string;
   refresh_token: string;
+  token_type: string;
   user: User;
 }
 
 export interface RegisterRequest {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   password: string;
-  password_confirm: string;
 }
 
 export interface RegisterResponse {
@@ -37,8 +42,7 @@ export interface ForgotPasswordRequest {
 
 export interface ResetPasswordRequest {
   token: string;
-  password: string;
-  password_confirm: string;
+  new_password: string;
 }
 
 export interface VerifyEmailRequest {
@@ -52,7 +56,7 @@ export interface ResendVerificationRequest {
 export interface ChangePasswordRequest {
   current_password: string;
   new_password: string;
-  new_password_confirm: string;
+  confirm_new_password: string;
 }
 
 export interface RefreshTokenRequest {
@@ -62,4 +66,12 @@ export interface RefreshTokenRequest {
 export interface RefreshTokenResponse {
   access_token: string;
   refresh_token: string;
+  token_type: string;
+}
+
+export interface AdminLoginResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  admin: User;
 }

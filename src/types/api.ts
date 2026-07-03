@@ -1,13 +1,5 @@
-export interface ApiResponse<T = unknown> {
-  status: string;
-  message: string;
-  data: T;
-}
-
 export interface ApiError {
-  status: string;
-  message: string;
-  errors?: Record<string, string[]>;
+  detail: string;
 }
 
 export interface PaginatedResponse<T> {

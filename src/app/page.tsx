@@ -1,67 +1,64 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { ROUTES } from '@/constants';
+import { Logo } from '@/components/ui/Logo';
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen animate-fade-in flex-col bg-white">
+      <header className="animate-slide-down border-b border-zinc-200">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between pl-3 pr-0">
           <Link
             href={ROUTES.HOME}
-            className="flex items-center gap-2"
             aria-label="RecentThink Home"
+            className="flex items-center transition-all duration-200 hover:scale-[1.02]"
           >
-            <Image
-              src="/recentthink-logo.png"
-              alt="RecentThink"
-              width={32}
-              height={32}
-              className="dark:invert"
-            />
-            <span className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-              RecentThink
-            </span>
+            <Logo width={48} height={48} showText textClassName="text-zinc-900" />
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 pr-0">
             <Link
               href={ROUTES.LOGIN}
-              className="text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+              className="text-sm font-medium text-zinc-600 transition-all duration-200 hover:text-zinc-900"
             >
               Sign in
             </Link>
-            <Link
-              href={ROUTES.REGISTER}
-              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            >
-              Get started
+            <Link href={ROUTES.REGISTER}>
+              <span className="inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-primary-hover hover:shadow-md active:scale-[0.97]">
+                Get started
+              </span>
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center px-4 text-center">
-        <div className="max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-5xl">
-            Think smarter with{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
-              AI
-            </span>
+      <main className="flex flex-1 items-center justify-center px-6">
+        <div className="max-w-2xl text-center">
+          <h1
+            className="animate-slide-up text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl"
+            style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
+          >
+            Think. Analyze.
+            <br />
+            <span className="text-primary">Automate</span> with AI.
           </h1>
-          <p className="mt-6 text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            RecentThink helps you capture, organize, and act on your ideas with the power of
-            artificial intelligence.
+          <p
+            className="animate-fade-up mt-6 text-lg text-zinc-500"
+            style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
+          >
+            RecentThink helps you capture, organize, and act on your ideas with intelligent AI
+            agents.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <Link
-              href={ROUTES.REGISTER}
-              className="rounded-lg bg-zinc-900 px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            >
-              Start for free
+          <div
+            className="mt-12 flex animate-fade-up items-center justify-center gap-4"
+            style={{ animationDelay: '0.3s', animationFillMode: 'both' }}
+          >
+            <Link href={ROUTES.REGISTER}>
+              <span className="inline-block rounded-xl bg-primary px-6 py-3 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-primary-hover hover:shadow-md active:scale-[0.97]">
+                Start for free
+              </span>
             </Link>
             <Link
               href={ROUTES.LOGIN}
-              className="rounded-lg border border-zinc-300 px-8 py-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="inline-block rounded-xl border border-zinc-300 px-6 py-3 text-sm font-medium text-zinc-700 shadow-sm transition-all duration-200 hover:border-zinc-400 hover:text-zinc-900 hover:shadow-sm active:scale-[0.97]"
             >
               Sign in
             </Link>
@@ -69,8 +66,8 @@ export default function HomePage() {
         </div>
       </main>
 
-      <footer className="border-t border-zinc-200 py-8 dark:border-zinc-800">
-        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+      <footer className="border-t border-zinc-200 py-8">
+        <div className="mx-auto max-w-6xl text-center text-sm text-muted">
           &copy; {new Date().getFullYear()} RecentThink. All rights reserved.
         </div>
       </footer>

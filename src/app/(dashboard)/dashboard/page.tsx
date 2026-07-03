@@ -12,7 +12,9 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white">Dashboard</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Welcome back, {user?.name}</p>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Welcome back, {user?.first_name}
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -55,9 +57,11 @@ export default function DashboardPage() {
 
       <Card>
         <div className="flex items-center gap-4">
-          <Avatar name={user?.name || 'User'} size="lg" />
+          <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} size="lg" />
           <div>
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">{user?.name}</h3>
+            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              {user?.first_name} {user?.last_name}
+            </h3>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{user?.email}</p>
             <div className="mt-1 flex items-center gap-2">
               <Badge variant={user?.is_verified ? 'success' : 'warning'}>

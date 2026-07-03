@@ -17,6 +17,7 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
       className={cn(
         'animate-spin rounded-full border-current border-t-transparent',
         sizes[size],
+        'animate-pulse-soft',
         className,
       )}
       role="status"
