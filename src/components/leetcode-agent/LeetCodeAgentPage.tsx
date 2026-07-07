@@ -1,0 +1,19 @@
+'use client';
+
+import { ConversationsSidebar } from './ConversationsSidebar';
+import { WorkspaceContent } from './WorkspaceContent';
+import { SessionStatsSidebar } from './SessionStatsSidebar';
+import { IconRail } from './IconRail';
+
+export function LeetCodeAgentPage() {
+  return (
+    <div className="min-h-0 w-full max-w-full overflow-x-hidden">
+      <div className="grid min-h-0 w-full max-w-full grid-cols-1 gap-0 overflow-x-hidden lg:grid-cols-[72px_320px_minmax(0,1fr)_280px] lg:gap-0">
+        <IconRail />
+        <ConversationsSidebar />
+        <WorkspaceContent />
+        <SessionStatsSidebar />
+      </div>
+    </div>
+  );
+}

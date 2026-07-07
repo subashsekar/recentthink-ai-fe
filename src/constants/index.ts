@@ -7,6 +7,7 @@ export const ROUTES = {
   VERIFY_EMAIL: '/verify-email',
   RESEND_VERIFICATION: '/resend-verification',
   DASHBOARD: '/dashboard',
+  LEETCODE_AGENT: '/leetcode-agent',
   PROFILE: '/profile',
   CHANGE_PASSWORD: '/change-password',
   ADMIN_LOGIN: '/admin/login',

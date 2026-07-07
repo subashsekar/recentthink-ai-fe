@@ -2,102 +2,92 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, User, Settings, LogOut, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { BookOpen, Code2, LayoutDashboard, Trophy, User, X } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { useAuthStore } from '@/store/authStore';
 import { ROUTES } from '@/constants';
-import { Logo } from './Logo';
-import { Button } from './Button';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
+  className?: string;
 }
 
 const navItems = [
   { href: ROUTES.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
+  { href: ROUTES.LEETCODE_AGENT, label: 'LeetCode Agent', icon: Code2 },
+  { href: '#', label: 'HackerRank Agent', icon: Trophy },
+  { href: '#', label: 'Course Generator', icon: BookOpen },
   { href: ROUTES.PROFILE, label: 'Profile', icon: User },
-  { href: '#', label: 'Settings', icon: Settings },
 ];
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
   const pathname = usePathname();
-  const { user, logout } = useAuthStore();
 
   return (
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 animate-fade-in bg-black/30 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
           onClick={onClose}
+          aria-hidden="true"
         />
       )}
 
-      <aside
+      <motion.aside
+        initial={{ opacity: 0, x: -24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-zinc-200 bg-white transition-all duration-300 ease-out lg:static lg:translate-x-0',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col rounded-[28px] border border-border bg-surface p-5 shadow-lg transition-transform duration-300 ease-out lg:sticky lg:top-6 lg:z-auto lg:h-[calc(100vh-3rem)] lg:translate-x-0',
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          'm-4 lg:m-0',
+          className,
         )}
       >
-        <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-6">
-          <Link href={ROUTES.DASHBOARD}>
-            <Logo showText textClassName="text-zinc-900" />
-          </Link>
+        <div className="mb-6 flex items-center justify-between lg:hidden">
+          <span className="font-heading text-lg font-semibold text-foreground">Menu</span>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg p-1 text-zinc-400 transition-all duration-200 hover:bg-zinc-100 lg:hidden"
+            className="rounded-xl p-1.5 text-muted transition-colors hover:bg-secondary-bg hover:text-foreground"
+            aria-label="Close menu"
           >
             <X size={20} />
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex flex-1 flex-col gap-1.5">
           {navItems.map((item, i) => {
             const isActive = pathname === item.href;
             return (
               <Link
-                key={item.href}
+                key={item.label}
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200',
+                  'group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-zinc-100 text-zinc-900'
-                    : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900',
+                    ? 'bg-primary/10 text-primary shadow-[0_0_20px_rgba(255,90,54,0.15)]'
+                    : 'text-muted hover:bg-secondary-bg hover:text-foreground',
                 )}
                 style={{
                   animation: isOpen ? `slideRight 0.3s ease-out ${0.1 + i * 0.05}s both` : 'none',
                 }}
               >
                 <item.icon
-                  size={18}
-                  className="transition-transform duration-200 group-hover:scale-110"
+                  size={20}
+                  className={cn(
+                    'transition-transform duration-200 group-hover:rotate-3',
+                    isActive ? 'text-primary' : 'text-muted group-hover:text-foreground',
+                  )}
                 />
                 {item.label}
               </Link>
             );
           })}
         </nav>
-
-        <div className="border-t border-zinc-200 p-4">
-          <div className="mb-2 flex items-center gap-3 px-3 py-2">
-            <div className="h-2 w-2 rounded-full bg-success animate-pulse-soft" />
-            <span className="text-sm text-zinc-500">{user?.email}</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            fullWidth
-            onClick={() => {
-              logout();
-              onClose();
-            }}
-          >
-            <LogOut size={16} />
-            Logout
-          </Button>
-        </div>
-      </aside>
+      </motion.aside>
     </>
   );
 }

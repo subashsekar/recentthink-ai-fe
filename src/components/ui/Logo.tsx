@@ -7,15 +7,41 @@ interface LogoProps {
   height?: number;
   showText?: boolean;
   textClassName?: string;
+  variant?: 'default' | 'navbar';
 }
 
 export function Logo({
   className,
-  width = 40,
-  height = 40,
+  width,
+  height,
   showText = false,
   textClassName,
+  variant = 'default',
 }: LogoProps) {
+  if (variant === 'navbar') {
+    return (
+      <span
+        className={cn(
+          'relative flex h-12 w-[160px] shrink-0 items-center justify-start overflow-hidden sm:w-[190px] lg:w-[220px]',
+          className,
+        )}
+      >
+        <Image
+          src="/recentthink-logo.svg"
+          alt="RecentThink"
+          width={1024}
+          height={1024}
+          priority
+          unoptimized
+          className="h-[168px] w-[168px] max-w-none shrink-0 object-cover object-[24%_34%] sm:h-[180px] sm:w-[180px] lg:h-[200px] lg:w-[200px]"
+        />
+      </span>
+    );
+  }
+
+  const imageWidth = width ?? 40;
+  const imageHeight = height ?? 40;
+
   return (
     <span
       className={cn(
@@ -26,13 +52,13 @@ export function Logo({
       <Image
         src="/recentthink-logo.svg"
         alt="RecentThink"
-        width={width}
-        height={height}
-        className="shrink-0"
-        priority
+        width={imageWidth}
+        height={imageHeight}
+        unoptimized
+        className="shrink-0 object-contain"
       />
       {showText && (
-        <span className={cn('text-lg font-bold tracking-tight text-primary-text', textClassName)}>
+        <span className={cn('text-lg font-bold tracking-tight text-foreground', textClassName)}>
           RecentThink
         </span>
       )}

@@ -1,58 +1,85 @@
 'use client';
 
 import Link from 'next/link';
-import { LogOut } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Bell, Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { ThemeToggle } from './ThemeToggle';
-import { Avatar } from './Avatar';
-import { Button } from './Button';
 import { Logo } from './Logo';
+import { SearchBar } from './SearchBar';
+import { ProfileDropdown } from './ProfileDropdown';
+import { Button } from './Button';
 import { ROUTES } from '@/constants';
+import { cn } from '@/utils/cn';
 
-export function Navbar() {
-  const { user, isAuthenticated, logout } = useAuthStore();
+interface NavbarProps {
+  onMenuClick?: () => void;
+  className?: string;
+}
+
+export function Navbar({ onMenuClick, className }: NavbarProps) {
+  const { isAuthenticated } = useAuthStore();
 
   return (
-    <header className="sticky top-0 z-30 animate-slide-down border-b border-zinc-200 bg-white/80 backdrop-blur-lg">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between pl-3 pr-0">
-        <Link
-          href={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME}
-          aria-label="RecentThink Home"
-          className="group flex items-center transition-all duration-200 hover:scale-[1.02]"
-        >
-          <span className="transition-all duration-200 group-hover:brightness-110">
-            <Logo width={48} height={48} showText textClassName="text-zinc-900" />
-          </span>
-        </Link>
+    <motion.header
+      initial={{ opacity: 0, y: -16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className={cn(
+        'sticky top-0 z-30 flex h-[72px] shrink-0 items-center rounded-[24px] border border-border bg-surface px-6 shadow-lg',
+        className,
+      )}
+    >
+      <div className="flex h-full w-full items-center gap-8">
+        <div className="flex shrink-0 items-center gap-3">
+          {onMenuClick && (
+            <button
+              type="button"
+              onClick={onMenuClick}
+              className="rounded-xl p-2 text-muted transition-colors hover:bg-secondary-bg hover:text-foreground lg:hidden"
+              aria-label="Open menu"
+            >
+              <Menu size={22} />
+            </button>
+          )}
+          <Link
+            href={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME}
+            aria-label="RecentThink Home"
+            className="flex h-12 shrink-0 items-center transition-opacity duration-200 hover:opacity-90"
+          >
+            <Logo variant="navbar" />
+          </Link>
+        </div>
 
-        <div className="flex items-center gap-2 pr-0 sm:gap-3">
-          <ThemeToggle />
+        {isAuthenticated && (
+          <div className="hidden min-w-0 flex-1 items-center justify-center md:flex">
+            <SearchBar />
+          </div>
+        )}
 
-          {isAuthenticated && user ? (
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Link
-                href={ROUTES.PROFILE}
-                className="relative flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-zinc-600 transition-all duration-200 hover:bg-zinc-100"
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <ThemeToggle className="rounded-2xl text-muted hover:bg-secondary-bg hover:text-foreground" />
+
+          {isAuthenticated ? (
+            <>
+              <button
+                type="button"
+                className="rounded-2xl p-2.5 text-muted transition-all duration-200 hover:bg-secondary-bg hover:text-foreground"
+                aria-label="Notifications"
               >
-                <Avatar name={`${user.first_name} ${user.last_name}`} size="sm" />
-                <span className="hidden sm:inline">
-                  {user.first_name} {user.last_name}
-                </span>
-              </Link>
-              <Button variant="ghost" size="sm" onClick={logout}>
-                <LogOut size={16} />
-                <span className="hidden sm:inline">Logout</span>
-              </Button>
-            </div>
+                <Bell size={20} />
+              </button>
+              <ProfileDropdown />
+            </>
           ) : (
             <div className="flex items-center gap-2">
               <Link href={ROUTES.LOGIN}>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="rounded-2xl">
                   Sign in
                 </Button>
               </Link>
               <Link href={ROUTES.REGISTER}>
-                <Button variant="primary" size="sm">
+                <Button variant="primary" size="sm" className="rounded-2xl">
                   Get started
                 </Button>
               </Link>
@@ -60,6 +87,6 @@ export function Navbar() {
           )}
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }
