@@ -23,14 +23,21 @@ interface ChatState {
   currentPage: ReportPage;
   isAnalyzing: boolean;
   isStreaming: boolean;
+  selectedModelId: string | null;
+  activeModeId: string;
+  statsDrawerOpen: boolean;
 
   startNewChat: () => void;
   setActiveSessionId: (sessionId: string | null) => void;
   setCurrentPage: (page: ReportPage) => void;
   setAnalyzing: (isAnalyzing: boolean) => void;
   setStreaming: (isStreaming: boolean) => void;
+  setSelectedModelId: (modelId: string | null) => void;
+  setActiveModeId: (modeId: string) => void;
+  setStatsDrawerOpen: (open: boolean) => void;
   applyAnalyzeResult: (result: NormalizedAnalyzeResult) => void;
   applyStreamEvent: (event: LeetCodeStreamEvent) => void;
+  hydrateFromSession: (result: NormalizedAnalyzeResult) => void;
 }
 
 const emptyRoles = (): Record<LeetCodeAgentRole, string> => ({
@@ -51,12 +58,21 @@ const initialState = {
   currentPage: 'problem' as ReportPage,
   isAnalyzing: false,
   isStreaming: false,
+  selectedModelId: null as string | null,
+  activeModeId: 'learning',
+  statsDrawerOpen: false,
 };
 
 export const useChatStore = create<ChatState>((set, get) => ({
   ...initialState,
 
-  startNewChat: () => set({ ...initialState }),
+  startNewChat: () =>
+    set({
+      ...initialState,
+      selectedModelId: get().selectedModelId,
+      activeModeId: get().activeModeId,
+      statsDrawerOpen: false,
+    }),
 
   setActiveSessionId: (activeSessionId) => set({ activeSessionId }),
 
@@ -65,6 +81,28 @@ export const useChatStore = create<ChatState>((set, get) => ({
   setAnalyzing: (isAnalyzing) => set({ isAnalyzing }),
 
   setStreaming: (isStreaming) => set({ isStreaming }),
+
+  setSelectedModelId: (selectedModelId) => set({ selectedModelId }),
+
+  setActiveModeId: (activeModeId) => set({ activeModeId }),
+
+  setStatsDrawerOpen: (statsDrawerOpen) => set({ statsDrawerOpen }),
+
+  hydrateFromSession: (result) =>
+    set({
+      activeSessionId: result.session.session_id,
+      session: result.session,
+      problemStatement: result.problemStatement,
+      problemStatementMarkdown: result.problemStatementMarkdown,
+      problemStatementHtml: result.problemStatementHtml,
+      roleContent: result.roleContent,
+      stats: result.stats,
+      currentPage: 'problem',
+      selectedModelId: result.session.model_id ?? get().selectedModelId,
+      activeModeId: result.session.mode_id ?? get().activeModeId,
+      isAnalyzing: false,
+      isStreaming: false,
+    }),
 
   applyAnalyzeResult: (result) =>
     set({
@@ -76,6 +114,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       roleContent: result.roleContent,
       stats: result.stats,
       currentPage: 'problem',
+      selectedModelId: result.session.model_id ?? get().selectedModelId,
+      activeModeId: result.session.mode_id ?? get().activeModeId,
       isAnalyzing: false,
       isStreaming: false,
     }),

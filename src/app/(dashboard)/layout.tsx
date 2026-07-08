@@ -6,7 +6,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { Navbar } from '@/components/ui/Navbar';
 import { Sidebar } from '@/components/ui/Sidebar';
 import { SearchBar } from '@/components/ui/SearchBar';
-import { IconRail } from '@/components/leetcode-agent/IconRail';
+import { SessionStatsTrigger } from '@/components/leetcode-agent/SessionStatsTrigger';
 import { ROUTES } from '@/constants';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -39,6 +39,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           >
             <Navbar
               onMenuClick={() => setSidebarOpen(true)}
+              endActions={isLeetCodeAgent ? <SessionStatsTrigger /> : undefined}
               className={
                 isLeetCodeAgent
                   ? 'mb-0 w-full max-w-full rounded-none border-x-0 border-t-0'

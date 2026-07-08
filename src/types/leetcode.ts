@@ -29,10 +29,16 @@ export interface AiModel {
 export interface SessionStats {
   current_model?: string;
   execution_time_ms?: number;
+  session_duration_ms?: number;
   token_usage?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
   estimated_cost_usd?: number;
   difficulty?: string;
   pattern?: string;
+  tags?: string[];
+  problem_tags?: string[];
+  problem_status?: string;
   current_streak?: number;
   problems_solved?: number;
   average_complexity?: string;

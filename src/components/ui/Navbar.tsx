@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Bell, Menu } from 'lucide-react';
@@ -15,9 +16,10 @@ import { cn } from '@/utils/cn';
 interface NavbarProps {
   onMenuClick?: () => void;
   className?: string;
+  endActions?: ReactNode;
 }
 
-export function Navbar({ onMenuClick, className }: NavbarProps) {
+export function Navbar({ onMenuClick, className, endActions }: NavbarProps) {
   const { isAuthenticated } = useAuthStore();
 
   return (
@@ -58,6 +60,7 @@ export function Navbar({ onMenuClick, className }: NavbarProps) {
         )}
 
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          {endActions}
           <ThemeToggle className="rounded-2xl text-muted hover:bg-secondary-bg hover:text-foreground" />
 
           {isAuthenticated ? (

@@ -1,15 +1,17 @@
 'use client';
 
+import { useRef } from 'react';
 import { WorkspaceHeader } from './WorkspaceHeader';
-import { LeetCodeHero } from './LeetCodeHero';
+import { LeetCodeHero, type LeetCodeHeroHandle } from './LeetCodeHero';
 import { ExampleCards } from './ExampleCards';
-import { SupportedModels } from './SupportedModels';
 import { FollowUpInput } from './FollowUpInput';
 import { SessionReport } from './SessionReport';
 import { useChatStore } from '@/store/chatStore';
 import { hasReportContent } from '@/utils/leetcodeSession';
 
 export function WorkspaceContent() {
+  const heroRef = useRef<LeetCodeHeroHandle>(null);
+
   const hasSession = useChatStore((s) =>
     hasReportContent({
       activeSessionId: s.activeSessionId,
@@ -32,9 +34,12 @@ export function WorkspaceContent() {
           </>
         ) : (
           <>
-            <LeetCodeHero />
-            <ExampleCards />
-            <SupportedModels />
+            <LeetCodeHero ref={heroRef} />
+            <ExampleCards
+              onSelectExample={(url) => {
+                void heroRef.current?.analyzeUrl(url);
+              }}
+            />
             <FollowUpInput />
           </>
         )}
