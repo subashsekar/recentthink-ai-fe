@@ -3,6 +3,7 @@ import type {
   LeetCodeAgentRole,
   LeetCodeSessionDetail,
   LeetCodeStreamEvent,
+  ModeInfo,
   SessionStats,
 } from '@/types/leetcode';
 import {
@@ -25,7 +26,9 @@ interface ChatState {
   isAnalyzing: boolean;
   isStreaming: boolean;
   selectedModelId: string | null;
-  activeModeId: string;
+  modes: ModeInfo[];
+  defaultModeId: string;
+  selectedModeId: string | null;
   statsDrawerOpen: boolean;
 
   startNewChat: () => void;
@@ -34,7 +37,9 @@ interface ChatState {
   setAnalyzing: (isAnalyzing: boolean) => void;
   setStreaming: (isStreaming: boolean) => void;
   setSelectedModelId: (modelId: string | null) => void;
-  setActiveModeId: (modeId: string) => void;
+  setModes: (modes: ModeInfo[]) => void;
+  setDefaultModeId: (modeId: string) => void;
+  setSelectedModeId: (modeId: string | null) => void;
   setStatsDrawerOpen: (open: boolean) => void;
   applyAnalyzeResult: (result: NormalizedAnalyzeResult) => void;
   applyFollowUpResult: (payload: unknown) => void;
@@ -61,7 +66,9 @@ const initialState = {
   isAnalyzing: false,
   isStreaming: false,
   selectedModelId: null as string | null,
-  activeModeId: 'learning',
+  modes: [] as ModeInfo[],
+  defaultModeId: 'learning',
+  selectedModeId: null as string | null,
   statsDrawerOpen: false,
 };
 
@@ -71,7 +78,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   startNewChat: () =>
     set({
       ...initialState,
-      activeModeId: get().activeModeId,
+      modes: get().modes,
+      defaultModeId: get().defaultModeId,
+      selectedModeId: get().selectedModeId,
       statsDrawerOpen: false,
     }),
 
@@ -85,7 +94,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   setSelectedModelId: (selectedModelId) => set({ selectedModelId }),
 
-  setActiveModeId: (activeModeId) => set({ activeModeId }),
+  setModes: (modes) => set({ modes }),
+
+  setDefaultModeId: (defaultModeId) => set({ defaultModeId }),
+
+  setSelectedModeId: (selectedModeId) => set({ selectedModeId }),
 
   setStatsDrawerOpen: (statsDrawerOpen) => set({ statsDrawerOpen }),
 
@@ -100,7 +113,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       stats: result.stats,
       currentPage: 'problem',
       selectedModelId: result.session.model_id ?? defaultModelId ?? null,
-      activeModeId: result.session.mode_id ?? get().activeModeId,
+      selectedModeId: result.session.mode_id ?? get().defaultModeId,
       isAnalyzing: false,
       isStreaming: false,
     }),
@@ -116,7 +129,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       stats: result.stats,
       currentPage: 'problem',
       selectedModelId: result.session.model_id ?? get().selectedModelId,
-      activeModeId: result.session.mode_id ?? get().activeModeId,
+      selectedModeId: result.session.mode_id ?? get().defaultModeId,
       isAnalyzing: false,
       isStreaming: false,
     }),
@@ -243,7 +256,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           roleContent: normalized.roleContent,
           stats: normalized.stats,
           selectedModelId: normalized.session.model_id ?? state.selectedModelId,
-          activeModeId: normalized.session.mode_id ?? state.activeModeId,
+          selectedModeId: normalized.session.mode_id ?? state.defaultModeId,
           currentPage: 'problem',
           isAnalyzing: false,
           isStreaming: false,

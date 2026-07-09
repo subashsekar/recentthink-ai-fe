@@ -9,13 +9,14 @@ import {
 } from '@/hooks/leetcode/useLeetCodeQueries';
 import { getModelLabel } from '@/utils/leetcodeModels';
 import { buildSessionStatsDisplay } from '@/utils/sessionStatsDisplay';
+import { useEffectiveModeId } from './useEffectiveModeId';
 
 export function useSessionStatsData() {
   const activeSessionId = useChatStore((s) => s.activeSessionId);
   const liveStats = useChatStore((s) => s.stats);
   const liveSession = useChatStore((s) => s.session);
   const selectedModelId = useChatStore((s) => s.selectedModelId);
-  const activeModeId = useChatStore((s) => s.activeModeId);
+  const effectiveModeId = useEffectiveModeId();
   const isStreaming = useChatStore((s) => s.isStreaming);
   const isAnalyzing = useChatStore((s) => s.isAnalyzing);
   const statsDrawerOpen = useChatStore((s) => s.statsDrawerOpen);
@@ -54,7 +55,7 @@ export function useSessionStatsData() {
   const modelLabel = getModelLabel(session?.model_id ?? selectedModelId, modelsData?.models ?? []);
 
   const modeLabel =
-    modes.find((mode) => mode.id === (session?.mode_id ?? activeModeId))?.label ?? '';
+    modes.find((mode) => mode.id === (session?.mode_id ?? effectiveModeId))?.label ?? '';
 
   const display = useMemo(
     () =>

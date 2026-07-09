@@ -19,6 +19,7 @@ export function usePatchSessionMutation() {
         is_archived: boolean;
         restore: boolean;
         model_id: string;
+        mode_id: string;
       }>;
     }) => leetcodeApi.patchSession(sessionId, patch),
     onSuccess: (_data, { sessionId }) => {
@@ -34,6 +35,19 @@ export function useUpdateSessionModelMutation() {
   return useMutation({
     mutationFn: ({ sessionId, modelId }: { sessionId: string; modelId: string }) =>
       leetcodeApi.patchSession(sessionId, { model_id: modelId }),
+    onSuccess: (_data, { sessionId }) => {
+      queryClient.invalidateQueries({ queryKey: leetcodeKeys.all });
+      queryClient.invalidateQueries({ queryKey: leetcodeKeys.session(sessionId) });
+    },
+  });
+}
+
+export function useUpdateSessionModeMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sessionId, modeId }: { sessionId: string; modeId: string }) =>
+      leetcodeApi.patchSession(sessionId, { mode_id: modeId }),
     onSuccess: (_data, { sessionId }) => {
       queryClient.invalidateQueries({ queryKey: leetcodeKeys.all });
       queryClient.invalidateQueries({ queryKey: leetcodeKeys.session(sessionId) });

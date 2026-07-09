@@ -73,6 +73,7 @@ export const leetcodeApi = {
       is_archived: boolean;
       restore: boolean;
       model_id: string;
+      mode_id: string;
     }>,
   ) => {
     const res = await gatewayClient.patch<LeetCodeSessionSummary>(
@@ -84,7 +85,10 @@ export const leetcodeApi = {
 
   getModes: async () => {
     const res = await gatewayClient.get<LeetCodeMode[]>('/leetcode/modes');
-    return res.data;
+    return res.data.map((mode) => ({
+      ...mode,
+      recommended: Boolean(mode.recommended),
+    }));
   },
 
   getProgress: async () => {

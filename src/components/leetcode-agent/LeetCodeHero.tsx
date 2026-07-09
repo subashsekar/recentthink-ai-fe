@@ -13,6 +13,7 @@ import { useChatStore } from '@/store/chatStore';
 import { ModelSelector } from './ModelSelector';
 import { useInvalidateLeetCodeQueries } from '@/hooks/leetcode/useLeetCodeMutations';
 import { useEffectiveModelId } from '@/hooks/leetcode/useEffectiveModelId';
+import { useEffectiveModeId } from '@/hooks/leetcode/useEffectiveModeId';
 
 export interface LeetCodeHeroHandle {
   analyzeUrl: (url: string) => Promise<void>;
@@ -30,7 +31,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
   const setAnalyzing = useChatStore((s) => s.setAnalyzing);
   const setStreaming = useChatStore((s) => s.setStreaming);
   const effectiveModelId = useEffectiveModelId();
-  const activeModeId = useChatStore((s) => s.activeModeId);
+  const effectiveModeId = useEffectiveModeId();
   const { invalidateAll } = useInvalidateLeetCodeQueries();
 
   const isValidLeetCodeUrl = useCallback((value: string) => {
@@ -82,7 +83,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
           console.debug('[LeetCode][Analyze] request -> POST /leetcode/analyze', {
             problem_url: trimmed,
             model_id: effectiveModelId,
-            mode_id: activeModeId,
+            mode_id: effectiveModeId,
           });
         }
 
@@ -90,7 +91,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
           {
             problem_url: trimmed,
             model_id: effectiveModelId ?? undefined,
-            mode_id: activeModeId || undefined,
+            mode_id: effectiveModeId || undefined,
           },
           {
             onJsonResponse: (payload) => {
@@ -147,7 +148,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
       isLoading,
       isValidLeetCodeUrl,
       effectiveModelId,
-      activeModeId,
+      effectiveModeId,
       applyAnalyzeResult,
       applyStreamEvent,
       setAnalyzing,

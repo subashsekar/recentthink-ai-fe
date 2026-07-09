@@ -8,6 +8,7 @@ import { useChatStore } from '@/store/chatStore';
 import { followUpAdaptive } from '@/services/api/followUpAdaptive';
 import { useInvalidateLeetCodeQueries } from '@/hooks/leetcode/useLeetCodeMutations';
 import { useEffectiveModelId } from '@/hooks/leetcode/useEffectiveModelId';
+import { useEffectiveModeId } from '@/hooks/leetcode/useEffectiveModeId';
 import { ApiRequestError } from '@/utils/apiError';
 import toast from 'react-hot-toast';
 import { cn } from '@/utils/cn';
@@ -19,7 +20,6 @@ export function FollowUpInput() {
   const abortRef = useRef<AbortController | null>(null);
 
   const activeSessionId = useChatStore((s) => s.activeSessionId);
-  const activeModeId = useChatStore((s) => s.activeModeId);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const isAnalyzing = useChatStore((s) => s.isAnalyzing);
   const applyFollowUpResult = useChatStore((s) => s.applyFollowUpResult);
@@ -27,6 +27,7 @@ export function FollowUpInput() {
   const setAnalyzing = useChatStore((s) => s.setAnalyzing);
   const setStreaming = useChatStore((s) => s.setStreaming);
   const effectiveModelId = useEffectiveModelId();
+  const effectiveModeId = useEffectiveModeId();
   const { invalidateAll } = useInvalidateLeetCodeQueries();
 
   const isBusy = isStreaming || isAnalyzing;
@@ -59,7 +60,7 @@ export function FollowUpInput() {
           session_id: activeSessionId,
           question: trimmed,
           model_id: effectiveModelId ?? undefined,
-          mode_id: activeModeId || undefined,
+          mode_id: effectiveModeId || undefined,
         },
         {
           onJsonResponse: (payload) => {

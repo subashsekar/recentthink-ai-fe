@@ -19,7 +19,18 @@ export interface LeetCodeFollowUpRequest {
 export interface LeetCodeMode {
   id: string;
   label: string;
+  description?: string;
+  icon?: string;
+  recommended?: boolean;
 }
+
+export type ModeInfo = {
+  id: string;
+  label: string;
+  description?: string;
+  icon?: string;
+  recommended: boolean;
+};
 
 export type { ModelInfo, ModelsResponse } from '@/types/ai-models';
 
