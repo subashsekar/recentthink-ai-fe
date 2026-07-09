@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2, Star } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAiModels } from '@/hooks/leetcode/useLeetCodeQueries';
 import { useChatStore } from '@/store/chatStore';
-import { getModelLabel } from '@/utils/leetcodeModels';
-import { useInvalidateLeetCodeQueries } from '@/hooks/leetcode/useLeetCodeMutations';
+import { getModelById, getModelLabel } from '@/utils/leetcodeModels';
+import { useUpdateSessionModelMutation } from '@/hooks/leetcode/useLeetCodeMutations';
+import { useEffectiveModelId } from '@/hooks/leetcode/useEffectiveModelId';
+import toast from 'react-hot-toast';
 
 interface ModelSelectorProps {
   className?: string;
@@ -16,19 +18,16 @@ interface ModelSelectorProps {
 export function ModelSelector({ className, compact }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { data: models = [], isLoading, isError } = useAiModels();
+  const { data: modelsData, isLoading, isError, refetch } = useAiModels();
+  const models = modelsData?.models ?? [];
   const selectedModelId = useChatStore((s) => s.selectedModelId);
   const setSelectedModelId = useChatStore((s) => s.setSelectedModelId);
   const activeSessionId = useChatStore((s) => s.activeSessionId);
-  const { invalidateSession } = useInvalidateLeetCodeQueries();
+  const effectiveModelId = useEffectiveModelId();
+  const updateSessionModel = useUpdateSessionModelMutation();
 
   useEffect(() => {
-    if (!selectedModelId && models.length > 0) {
-      setSelectedModelId(models[0].id);
-    }
-  }, [models, selectedModelId, setSelectedModelId]);
-
-  useEffect(() => {
+    if (!open) return;
     function handleClickOutside(event: MouseEvent) {
       if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
@@ -36,27 +35,45 @@ export function ModelSelector({ className, compact }: ModelSelectorProps) {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [open]);
 
-  const handleSelect = (modelId: string) => {
+  const handleSelect = async (modelId: string) => {
+    if (modelId === effectiveModelId) {
+      setOpen(false);
+      return;
+    }
+
+    const previousId = selectedModelId;
     setSelectedModelId(modelId);
     setOpen(false);
-    if (activeSessionId) {
-      invalidateSession(activeSessionId);
+
+    if (!activeSessionId) return;
+
+    try {
+      await updateSessionModel.mutateAsync({ sessionId: activeSessionId, modelId });
+    } catch {
+      setSelectedModelId(previousId);
+      toast.error('Failed to update model for this conversation.');
     }
   };
+
+  const activeModel = getModelById(effectiveModelId, models);
 
   const label = isLoading
     ? 'Loading models...'
     : isError
       ? 'Models unavailable'
-      : getModelLabel(selectedModelId, models);
+      : activeModel
+        ? activeModel.name
+        : getModelLabel(effectiveModelId, models);
 
   return (
     <div ref={ref} className={cn('relative', className)}>
       <button
         type="button"
-        onClick={() => !isLoading && !isError && setOpen((v) => !v)}
+        onClick={() => {
+          if (!isLoading && !isError) setOpen((v) => !v);
+        }}
         disabled={isLoading || isError || models.length === 0}
         className={cn(
           'flex items-center gap-1.5 rounded-xl border border-border bg-secondary-bg text-foreground transition-colors hover:bg-secondary-bg/80',
@@ -71,31 +88,70 @@ export function ModelSelector({ className, compact }: ModelSelectorProps) {
         <ChevronDown size={14} className="shrink-0 text-muted" />
       </button>
 
+      {isError && !open && (
+        <p className="absolute bottom-full left-0 mb-1 hidden text-[10px] text-error">
+          Unavailable
+        </p>
+      )}
+
       {open && models.length > 0 && (
         <div
           role="listbox"
-          className="absolute bottom-full left-0 z-30 mb-2 min-w-[200px] overflow-hidden rounded-xl border border-border bg-surface p-1 shadow-xl"
+          className="absolute bottom-full left-0 z-30 mb-2 max-h-[320px] w-[min(280px,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-xl"
         >
           {models.map((model) => {
-            const isActive = model.id === selectedModelId;
+            const isActive = model.id === effectiveModelId;
             return (
               <button
                 key={model.id}
                 type="button"
                 role="option"
                 aria-selected={isActive}
-                onClick={() => handleSelect(model.id)}
+                disabled={updateSessionModel.isPending}
+                onClick={() => void handleSelect(model.id)}
                 className={cn(
-                  'flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors',
-                  isActive
-                    ? 'bg-primary/10 font-medium text-primary'
-                    : 'text-foreground hover:bg-secondary-bg',
+                  'flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-colors',
+                  isActive ? 'bg-primary/10' : 'text-foreground hover:bg-secondary-bg',
                 )}
               >
-                {model.name}
+                <div className="flex items-center gap-1.5">
+                  {model.recommended ? (
+                    <Star size={12} className="shrink-0 fill-amber-400 text-amber-400" />
+                  ) : null}
+                  <span
+                    className={cn(
+                      'truncate text-sm',
+                      isActive ? 'font-semibold text-primary' : 'font-medium',
+                    )}
+                  >
+                    {model.name}
+                  </span>
+                  {model.default ? (
+                    <span className="shrink-0 rounded-md bg-secondary-bg px-1.5 py-0.5 text-[10px] font-medium text-muted">
+                      Default
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-0.5 truncate text-xs text-muted">
+                  {model.provider}
+                  {model.description ? ` · ${model.description}` : ''}
+                </p>
               </button>
             );
           })}
+        </div>
+      )}
+
+      {open && isError && (
+        <div className="absolute bottom-full left-0 z-30 mb-2 min-w-[200px] rounded-xl border border-border bg-surface p-3 text-xs text-muted shadow-xl">
+          <p>Could not load models.</p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="mt-2 font-medium text-primary hover:underline"
+          >
+            Try again
+          </button>
         </div>
       )}
     </div>

@@ -1,6 +1,5 @@
 import type { ApiPaginatedResponse } from '@/types/api';
 import type {
-  AiModel,
   LeetCodeAnalyzeRequest,
   LeetCodeExamplesItem,
   LeetCodeFollowUpRequest,
@@ -28,7 +27,12 @@ export const leetcodeApi = {
   },
 
   followUp: async (data: LeetCodeFollowUpRequest) => {
-    const res = await gatewayClient.post<LeetCodeSessionDetail>('/leetcode/follow-up', data);
+    const res = await gatewayClient.post<LeetCodeSessionDetail>('/leetcode/follow-up', {
+      session_id: data.session_id,
+      question: data.question,
+      mode_id: data.mode_id,
+      model: data.model ?? data.model_id,
+    });
     return res.data;
   },
 
@@ -68,6 +72,7 @@ export const leetcodeApi = {
       is_pinned: boolean;
       is_archived: boolean;
       restore: boolean;
+      model_id: string;
     }>,
   ) => {
     const res = await gatewayClient.patch<LeetCodeSessionSummary>(
@@ -89,14 +94,6 @@ export const leetcodeApi = {
 
   getExamples: async () => {
     const res = await gatewayClient.get<LeetCodeExamplesItem[]>('/leetcode/examples');
-    return res.data;
-  },
-};
-
-export const modelsApi = {
-  getModels: async () => {
-    // Backend contract (via gateway :8000): GET /ai/models
-    const res = await gatewayClient.get<AiModel[]>('/ai/models');
     return res.data;
   },
 };

@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef } from 'react';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronLeft, ChevronRight, Download, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { cn } from '@/utils/cn';
 import { useChatStore } from '@/store/chatStore';
 import { REPORT_PAGE_LABELS, REPORT_PAGES, type ReportPage } from '@/utils/leetcodeSession';
 import type { LeetCodeAgentRole } from '@/types/leetcode';
+import { buildSessionReportPdfData, exportSessionReportPdf } from '@/utils/exportSessionReportPdf';
 import { ReportContent } from './ReportContent';
 
 export function SessionReport() {
@@ -18,7 +20,7 @@ export function SessionReport() {
   const session = useChatStore((s) => s.session);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const isAnalyzing = useChatStore((s) => s.isAnalyzing);
-  const printRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const pageIndex = REPORT_PAGES.indexOf(currentPage);
   const canPrev = pageIndex > 0;
@@ -52,9 +54,40 @@ export function SessionReport() {
     plain: roleContent[role],
   });
 
-  const handleExportPage = () => {
-    window.print();
+  const handleExportPdf = async () => {
+    if (
+      !hasProblemContent &&
+      !REPORT_PAGES.some((page) => page !== 'problem' && roleContent[page]?.trim())
+    ) {
+      toast.error('No report content available to export.');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const problem = getProblemContent();
+      const pdfData = buildSessionReportPdfData({
+        title: session?.title ?? 'LeetCode Analysis',
+        url: session?.url,
+        problem,
+        roleContent,
+        includeEmptySections: true,
+      });
+      await exportSessionReportPdf(pdfData);
+      toast.success('PDF downloaded.');
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to generate PDF. Please try again.';
+      toast.error(message);
+    } finally {
+      setIsExporting(false);
+    }
   };
+
+  const canExport = Boolean(
+    hasProblemContent ||
+    REPORT_PAGES.some((page) => page !== 'problem' && roleContent[page]?.trim()),
+  );
 
   const renderPage = (page: ReportPage) => {
     if (page === 'problem') {
@@ -92,15 +125,16 @@ export function SessionReport() {
         </div>
         <button
           type="button"
-          onClick={handleExportPage}
-          className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-secondary-bg print:hidden"
+          onClick={() => void handleExportPdf()}
+          disabled={isExporting || !canExport}
+          className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-secondary-bg disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Download size={14} />
-          Export Problem (PDF)
+          {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+          {isExporting ? 'Generating PDF...' : 'Download PDF'}
         </button>
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2 print:hidden">
+      <div className="mb-4 flex flex-wrap gap-2">
         {REPORT_PAGES.map((page) => {
           const isActive = page === currentPage;
           const hasContent =
@@ -126,35 +160,22 @@ export function SessionReport() {
         })}
       </div>
 
-      <div ref={printRef}>
-        <div
-          id="leetcode-report-page"
-          className="min-h-[320px] flex-1 rounded-2xl border border-border bg-secondary-bg/40 p-5 shadow-sm print:hidden"
-        >
-          <div className="mb-3 border-b border-border pb-3">
-            <h3 className="font-heading text-lg font-semibold text-foreground">
-              {REPORT_PAGE_LABELS[currentPage]}
-            </h3>
-            {session?.url && currentPage === 'problem' && (
-              <p className="mt-1 text-xs text-muted">{session.url}</p>
-            )}
-          </div>
-          {renderPage(currentPage)}
+      <div
+        id="leetcode-report-page"
+        className="min-h-[320px] flex-1 rounded-2xl border border-border bg-secondary-bg/40 p-5 shadow-sm"
+      >
+        <div className="mb-3 border-b border-border pb-3">
+          <h3 className="font-heading text-lg font-semibold text-foreground">
+            {REPORT_PAGE_LABELS[currentPage]}
+          </h3>
+          {session?.url && currentPage === 'problem' && (
+            <p className="mt-1 text-xs text-muted">{session.url}</p>
+          )}
         </div>
-
-        <div id="leetcode-report-full" className="hidden print:block">
-          {/* PDF: problem statement only, LeetCode-style */}
-          <section className="leetcode-problem-pdf break-after-page p-4">
-            <h2 className="mb-1 font-heading text-2xl font-semibold text-foreground">
-              {session?.title ?? 'Problem'}
-            </h2>
-            {session?.url && <p className="mb-4 text-sm text-muted">{session.url}</p>}
-            {renderPage('problem')}
-          </section>
-        </div>
+        {renderPage(currentPage)}
       </div>
 
-      <div className="mt-4 flex items-center justify-between print:hidden">
+      <div className="mt-4 flex items-center justify-between">
         <button
           type="button"
           onClick={goPrev}

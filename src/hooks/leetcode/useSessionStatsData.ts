@@ -20,7 +20,7 @@ export function useSessionStatsData() {
   const isAnalyzing = useChatStore((s) => s.isAnalyzing);
   const statsDrawerOpen = useChatStore((s) => s.statsDrawerOpen);
 
-  const { data: models = [] } = useAiModels();
+  const { data: modelsData } = useAiModels();
   const { data: modes = [] } = useLeetCodeModes();
 
   const {
@@ -51,7 +51,7 @@ export function useSessionStatsData() {
     }
   }, [statsDrawerOpen, activeSessionId, refetch]);
 
-  const modelLabel = getModelLabel(session?.model_id ?? selectedModelId, models);
+  const modelLabel = getModelLabel(session?.model_id ?? selectedModelId, modelsData?.models ?? []);
 
   const modeLabel =
     modes.find((mode) => mode.id === (session?.mode_id ?? activeModeId))?.label ?? '';

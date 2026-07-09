@@ -1,48 +1,30 @@
-import type { AiModel } from '@/types/leetcode';
+import type { ModelInfo, ModelsResponse } from '@/types/ai-models';
 
-export interface LeetCodeModelOption {
-  id: string;
-  name: string;
-}
-
-/** UI allowlist — matched against GET /ai/models by id or name. */
-export const LEETCODE_MODEL_ALLOWLIST: LeetCodeModelOption[] = [
-  { id: 'chatgpt-free', name: 'ChatGPT Free' },
-  { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
-  { id: 'grok', name: 'Grok' },
-  { id: 'qwen', name: 'Qwen' },
-  { id: 'deepseek', name: 'DeepSeek' },
-];
-
-function normalizeKey(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
-}
-
-export function resolveLeetCodeModels(apiModels: AiModel[] | undefined): LeetCodeModelOption[] {
-  if (!apiModels?.length) return LEETCODE_MODEL_ALLOWLIST;
-
-  const byId = new Map(apiModels.map((m) => [normalizeKey(m.id), m]));
-  const byName = new Map(apiModels.map((m) => [normalizeKey(m.name), m]));
-
-  return LEETCODE_MODEL_ALLOWLIST.map((allowed) => {
-    const match =
-      byId.get(normalizeKey(allowed.id)) ??
-      byName.get(normalizeKey(allowed.name)) ??
-      apiModels.find(
-        (m) =>
-          normalizeKey(m.name).includes(normalizeKey(allowed.name)) ||
-          normalizeKey(allowed.name).includes(normalizeKey(m.name)),
-      );
-
-    return match ? { id: match.id, name: match.name } : allowed;
+export function sortModels(models: ModelInfo[]): ModelInfo[] {
+  return [...models].sort((a, b) => {
+    if (a.recommended !== b.recommended) return a.recommended ? -1 : 1;
+    if (a.default !== b.default) return a.default ? -1 : 1;
+    return a.name.localeCompare(b.name);
   });
 }
 
-export function getModelLabel(
+export function resolveDefaultModelId(data: ModelsResponse | undefined): string | null {
+  if (!data) return null;
+  if (data.default_model) return data.default_model;
+  const flagged = data.models.find((m) => m.default);
+  if (flagged) return flagged.id;
+  return data.models[0]?.id ?? null;
+}
+
+export function getModelById(
   modelId: string | undefined | null,
-  models: LeetCodeModelOption[],
-): string {
+  models: ModelInfo[],
+): ModelInfo | undefined {
+  if (!modelId) return undefined;
+  return models.find((m) => m.id === modelId);
+}
+
+export function getModelLabel(modelId: string | undefined | null, models: ModelInfo[]): string {
   if (!modelId) return 'Select model';
-  const match = models.find((m) => m.id === modelId);
-  return match?.name ?? modelId;
+  return getModelById(modelId, models)?.name ?? modelId;
 }

@@ -6,5 +6,5 @@ export const leetcodeKeys = {
   modes: () => [...leetcodeKeys.all, 'modes'] as const,
   progress: () => [...leetcodeKeys.all, 'progress'] as const,
   examples: () => [...leetcodeKeys.all, 'examples'] as const,
-  models: () => ['ai', 'models'] as const,
+  models: () => ['ai-models'] as const,
 };

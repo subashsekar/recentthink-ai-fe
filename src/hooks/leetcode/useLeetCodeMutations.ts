@@ -18,8 +18,22 @@ export function usePatchSessionMutation() {
         is_pinned: boolean;
         is_archived: boolean;
         restore: boolean;
+        model_id: string;
       }>;
     }) => leetcodeApi.patchSession(sessionId, patch),
+    onSuccess: (_data, { sessionId }) => {
+      queryClient.invalidateQueries({ queryKey: leetcodeKeys.all });
+      queryClient.invalidateQueries({ queryKey: leetcodeKeys.session(sessionId) });
+    },
+  });
+}
+
+export function useUpdateSessionModelMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sessionId, modelId }: { sessionId: string; modelId: string }) =>
+      leetcodeApi.patchSession(sessionId, { model_id: modelId }),
     onSuccess: (_data, { sessionId }) => {
       queryClient.invalidateQueries({ queryKey: leetcodeKeys.all });
       queryClient.invalidateQueries({ queryKey: leetcodeKeys.session(sessionId) });

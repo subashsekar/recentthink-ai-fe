@@ -24,7 +24,7 @@ import {
 import { normalizeAnalyzeResponse } from '@/utils/leetcodeSession';
 import { leetcodeApi } from '@/services/api/leetcode';
 import type { LeetCodeSessionSummary } from '@/types/leetcode';
-import { getModelLabel } from '@/utils/leetcodeModels';
+import { getModelLabel, resolveDefaultModelId } from '@/utils/leetcodeModels';
 
 function formatDate(value: string): string {
   try {
@@ -59,7 +59,9 @@ export function ConversationsSidebar() {
   const setActiveSessionId = useChatStore((s) => s.setActiveSessionId);
   const hydrateFromSession = useChatStore((s) => s.hydrateFromSession);
 
-  const { data: models = [] } = useAiModels();
+  const { data: modelsData } = useAiModels();
+  const defaultModelId = resolveDefaultModelId(modelsData);
+  const modelList = modelsData?.models ?? [];
   const {
     data: history,
     isLoading,
@@ -104,7 +106,7 @@ export function ConversationsSidebar() {
     setActiveSessionId(conversation.session_id);
     try {
       const session = await leetcodeApi.getSession(conversation.session_id);
-      hydrateFromSession(normalizeAnalyzeResponse(session));
+      hydrateFromSession(normalizeAnalyzeResponse(session), defaultModelId);
     } catch {
       toast.error('Failed to load conversation.');
       setActiveSessionId(null);
@@ -261,7 +263,7 @@ export function ConversationsSidebar() {
           >
             <ContextMenu
               conversation={menuConversation}
-              modelLabel={getModelLabel(menuConversation.model_id, models)}
+              modelLabel={getModelLabel(menuConversation.model_id, modelList)}
               onRename={() => {
                 setRenamingId(menuConversation.session_id);
                 setRenameValue(menuConversation.title);

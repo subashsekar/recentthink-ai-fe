@@ -5,8 +5,9 @@ import { AlertCircle, RefreshCw, RotateCcw, Send } from 'lucide-react';
 import { FOLLOW_UP_SUGGESTIONS } from './data';
 import { ModelSelector } from './ModelSelector';
 import { useChatStore } from '@/store/chatStore';
-import { followUpAdaptive, parseJsonFollowUpPayload } from '@/services/api/followUpAdaptive';
+import { followUpAdaptive } from '@/services/api/followUpAdaptive';
 import { useInvalidateLeetCodeQueries } from '@/hooks/leetcode/useLeetCodeMutations';
+import { useEffectiveModelId } from '@/hooks/leetcode/useEffectiveModelId';
 import { ApiRequestError } from '@/utils/apiError';
 import toast from 'react-hot-toast';
 import { cn } from '@/utils/cn';
@@ -18,14 +19,14 @@ export function FollowUpInput() {
   const abortRef = useRef<AbortController | null>(null);
 
   const activeSessionId = useChatStore((s) => s.activeSessionId);
-  const selectedModelId = useChatStore((s) => s.selectedModelId);
   const activeModeId = useChatStore((s) => s.activeModeId);
   const isStreaming = useChatStore((s) => s.isStreaming);
   const isAnalyzing = useChatStore((s) => s.isAnalyzing);
-  const applyAnalyzeResult = useChatStore((s) => s.applyAnalyzeResult);
+  const applyFollowUpResult = useChatStore((s) => s.applyFollowUpResult);
   const applyStreamEvent = useChatStore((s) => s.applyStreamEvent);
   const setAnalyzing = useChatStore((s) => s.setAnalyzing);
   const setStreaming = useChatStore((s) => s.setStreaming);
+  const effectiveModelId = useEffectiveModelId();
   const { invalidateAll } = useInvalidateLeetCodeQueries();
 
   const isBusy = isStreaming || isAnalyzing;
@@ -57,16 +58,27 @@ export function FollowUpInput() {
         {
           session_id: activeSessionId,
           question: trimmed,
-          model_id: selectedModelId ?? undefined,
+          model_id: effectiveModelId ?? undefined,
           mode_id: activeModeId || undefined,
         },
         {
           onJsonResponse: (payload) => {
-            applyAnalyzeResult(parseJsonFollowUpPayload(payload));
+            applyFollowUpResult(payload);
           },
           onStreamEvent: (event) => {
             if (event.type === 'error') {
               throw new Error(event.message);
+            }
+            if (event.type === 'message' && event.role === 'teacher') {
+              applyFollowUpResult({
+                session_id: event.session_id,
+                teacher: event.content,
+              });
+              return;
+            }
+            if (event.type === 'complete') {
+              applyFollowUpResult(event);
+              return;
             }
             applyStreamEvent(event);
           },
@@ -76,6 +88,7 @@ export function FollowUpInput() {
 
       setValue('');
       invalidateAll(activeSessionId);
+      toast.success('Follow-up answer ready. See the Teacher tab.');
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
 
@@ -93,12 +106,12 @@ export function FollowUpInput() {
     }
   };
 
-  const handleSend = () => sendFollowUp(value);
+  const handleSend = () => void sendFollowUp(value);
   const handleRetry = () => {
-    if (lastQuestion) sendFollowUp(lastQuestion, true);
+    if (lastQuestion) void sendFollowUp(lastQuestion, true);
   };
   const handleRegenerate = () => {
-    if (lastQuestion) sendFollowUp(lastQuestion, true);
+    if (lastQuestion) void sendFollowUp(lastQuestion, true);
   };
 
   return (

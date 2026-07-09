@@ -8,6 +8,7 @@ import type {
 import {
   mergeRoleDelta,
   normalizeAnalyzeResponse,
+  normalizeFollowUpResponse,
   type NormalizedAnalyzeResult,
   type ReportPage,
 } from '@/utils/leetcodeSession';
@@ -36,8 +37,9 @@ interface ChatState {
   setActiveModeId: (modeId: string) => void;
   setStatsDrawerOpen: (open: boolean) => void;
   applyAnalyzeResult: (result: NormalizedAnalyzeResult) => void;
+  applyFollowUpResult: (payload: unknown) => void;
   applyStreamEvent: (event: LeetCodeStreamEvent) => void;
-  hydrateFromSession: (result: NormalizedAnalyzeResult) => void;
+  hydrateFromSession: (result: NormalizedAnalyzeResult, defaultModelId?: string | null) => void;
 }
 
 const emptyRoles = (): Record<LeetCodeAgentRole, string> => ({
@@ -69,7 +71,6 @@ export const useChatStore = create<ChatState>((set, get) => ({
   startNewChat: () =>
     set({
       ...initialState,
-      selectedModelId: get().selectedModelId,
       activeModeId: get().activeModeId,
       statsDrawerOpen: false,
     }),
@@ -88,7 +89,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   setStatsDrawerOpen: (statsDrawerOpen) => set({ statsDrawerOpen }),
 
-  hydrateFromSession: (result) =>
+  hydrateFromSession: (result, defaultModelId?: string | null) =>
     set({
       activeSessionId: result.session.session_id,
       session: result.session,
@@ -98,7 +99,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       roleContent: result.roleContent,
       stats: result.stats,
       currentPage: 'problem',
-      selectedModelId: result.session.model_id ?? get().selectedModelId,
+      selectedModelId: result.session.model_id ?? defaultModelId ?? null,
       activeModeId: result.session.mode_id ?? get().activeModeId,
       isAnalyzing: false,
       isStreaming: false,
@@ -119,6 +120,23 @@ export const useChatStore = create<ChatState>((set, get) => ({
       isAnalyzing: false,
       isStreaming: false,
     }),
+
+  applyFollowUpResult: (payload) => {
+    const state = get();
+    const result = normalizeFollowUpResponse(payload, state);
+    set({
+      activeSessionId: result.session.session_id,
+      session: result.session,
+      problemStatement: result.problemStatement,
+      problemStatementMarkdown: result.problemStatementMarkdown,
+      problemStatementHtml: result.problemStatementHtml,
+      roleContent: result.roleContent,
+      stats: result.stats,
+      currentPage: 'teacher',
+      isAnalyzing: false,
+      isStreaming: false,
+    });
+  },
 
   applyStreamEvent: (event) => {
     const state = get();
@@ -214,6 +232,24 @@ export const useChatStore = create<ChatState>((set, get) => ({
       case 'done':
         set({ isAnalyzing: false, isStreaming: false });
         break;
+      case 'complete': {
+        const normalized = normalizeAnalyzeResponse(event);
+        set({
+          activeSessionId: normalized.session.session_id,
+          session: normalized.session,
+          problemStatement: normalized.problemStatement,
+          problemStatementMarkdown: normalized.problemStatementMarkdown,
+          problemStatementHtml: normalized.problemStatementHtml,
+          roleContent: normalized.roleContent,
+          stats: normalized.stats,
+          selectedModelId: normalized.session.model_id ?? state.selectedModelId,
+          activeModeId: normalized.session.mode_id ?? state.activeModeId,
+          currentPage: 'problem',
+          isAnalyzing: false,
+          isStreaming: false,
+        });
+        break;
+      }
       case 'error':
         set({ isAnalyzing: false, isStreaming: false });
         break;

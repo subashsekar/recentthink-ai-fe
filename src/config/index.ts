@@ -3,8 +3,8 @@ export const config = {
     // Single gateway base URL (frontend -> gateway -> services).
     // Keep legacy env vars as fallbacks.
     baseUrl:
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
       process.env.NEXT_PUBLIC_GATEWAY_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
       'http://localhost:8000',
     // Optional prefix for non-root mounted APIs.

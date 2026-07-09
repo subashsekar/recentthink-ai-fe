@@ -12,6 +12,7 @@ import { ApiRequestError } from '@/utils/apiError';
 import { useChatStore } from '@/store/chatStore';
 import { ModelSelector } from './ModelSelector';
 import { useInvalidateLeetCodeQueries } from '@/hooks/leetcode/useLeetCodeMutations';
+import { useEffectiveModelId } from '@/hooks/leetcode/useEffectiveModelId';
 
 export interface LeetCodeHeroHandle {
   analyzeUrl: (url: string) => Promise<void>;
@@ -28,7 +29,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
   const applyStreamEvent = useChatStore((s) => s.applyStreamEvent);
   const setAnalyzing = useChatStore((s) => s.setAnalyzing);
   const setStreaming = useChatStore((s) => s.setStreaming);
-  const selectedModelId = useChatStore((s) => s.selectedModelId);
+  const effectiveModelId = useEffectiveModelId();
   const activeModeId = useChatStore((s) => s.activeModeId);
   const { invalidateAll } = useInvalidateLeetCodeQueries();
 
@@ -80,7 +81,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
         if (process.env.NODE_ENV !== 'production') {
           console.debug('[LeetCode][Analyze] request -> POST /leetcode/analyze', {
             problem_url: trimmed,
-            model_id: selectedModelId,
+            model_id: effectiveModelId,
             mode_id: activeModeId,
           });
         }
@@ -88,7 +89,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
         await analyzeAdaptive(
           {
             problem_url: trimmed,
-            model_id: selectedModelId ?? undefined,
+            model_id: effectiveModelId ?? undefined,
             mode_id: activeModeId || undefined,
           },
           {
@@ -99,6 +100,15 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
             onStreamEvent: (event) => {
               if (event.type === 'error') {
                 throw new Error(event.message);
+              }
+              if (event.type === 'complete') {
+                const status = String(event.status ?? '').toUpperCase();
+                if (status === 'MANUAL_REQUIRED') {
+                  throw new Error(
+                    event.message ||
+                      'We could not retrieve the problem from the URL. Please paste the statement manually.',
+                  );
+                }
               }
               applyStreamEvent(event);
             },
@@ -136,7 +146,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
       url,
       isLoading,
       isValidLeetCodeUrl,
-      selectedModelId,
+      effectiveModelId,
       activeModeId,
       applyAnalyzeResult,
       applyStreamEvent,

@@ -10,7 +10,9 @@ export interface LeetCodeAnalyzeRequest {
 export interface LeetCodeFollowUpRequest {
   session_id: string;
   question: string;
+  /** Backend field name is `model`; we accept `model_id` in the UI layer. */
   model_id?: string;
+  model?: string;
   mode_id?: string;
 }
 
@@ -19,12 +21,10 @@ export interface LeetCodeMode {
   label: string;
 }
 
-export interface AiModel {
-  id: string;
-  name: string;
-  description?: string;
-  active?: boolean;
-}
+export type { ModelInfo, ModelsResponse } from '@/types/ai-models';
+
+/** @deprecated Use ModelInfo from @/types/ai-models */
+export type AiModel = import('@/types/ai-models').ModelInfo;
 
 export interface SessionStats {
   current_model?: string;
@@ -117,6 +117,21 @@ export type LeetCodeStreamEvent =
   | {
       type: 'done';
       session_id: string;
+    }
+  | {
+      type: 'complete';
+      session_id?: string;
+      status?: string;
+      message?: string;
+      instructions?: string[];
+      problem?: Record<string, unknown>;
+      planner?: Record<string, unknown> | string;
+      teacher?: string;
+      coder?: Record<string, unknown> | string;
+      evaluator?: Record<string, unknown> | string;
+      total_tokens?: number;
+      total_execution_time_ms?: number;
+      mode_id?: string;
     }
   | {
       type: 'error';

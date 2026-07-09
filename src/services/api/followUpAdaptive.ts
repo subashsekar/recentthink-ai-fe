@@ -1,7 +1,6 @@
 import { config } from '@/config';
 import { storage } from '@/utils/storage';
 import { createApiRequestError } from '@/utils/apiError';
-import { normalizeAnalyzeResponse } from '@/utils/leetcodeSession';
 import type { LeetCodeFollowUpRequest, LeetCodeStreamEvent } from '@/types/leetcode';
 import { processStreamResponse } from './streaming';
 
@@ -29,7 +28,12 @@ export async function followUpAdaptive(
   const res = await fetch(`${gatewayBase}/leetcode/follow-up`, {
     method: 'POST',
     headers,
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      session_id: data.session_id,
+      question: data.question,
+      mode_id: data.mode_id,
+      model: data.model ?? data.model_id,
+    }),
     signal,
   });
 
@@ -68,8 +72,4 @@ export async function followUpAdaptive(
       detail: text,
     });
   }
-}
-
-export function parseJsonFollowUpPayload(payload: unknown) {
-  return normalizeAnalyzeResponse(payload);
 }

@@ -1,9 +1,20 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { leetcodeApi, modelsApi } from '@/services/api/leetcode';
-import { resolveLeetCodeModels } from '@/utils/leetcodeModels';
+import { leetcodeApi } from '@/services/api/leetcode';
+import { getAiModels } from '@/services/api/models';
+import { useAuthStore } from '@/store/authStore';
+import { sortModels } from '@/utils/leetcodeModels';
 import { leetcodeKeys } from './queryKeys';
+import type { ModelsResponse } from '@/types/ai-models';
+
+function normalizeModelsResponse(data: ModelsResponse): ModelsResponse {
+  const models = sortModels(data.models.filter((m) => m.enabled));
+  return {
+    default_model: data.default_model,
+    models,
+  };
+}
 
 export function useLeetCodeHistory(params?: { limit?: number; offset?: number; q?: string }) {
   return useQuery({
@@ -42,9 +53,13 @@ export function useLeetCodeExamples() {
 }
 
 export function useAiModels() {
+  const accessToken = useAuthStore((s) => s.accessToken);
+
   return useQuery({
     queryKey: leetcodeKeys.models(),
-    queryFn: () => modelsApi.getModels(),
-    select: (data) => resolveLeetCodeModels(data),
+    queryFn: () => getAiModels(accessToken!),
+    enabled: Boolean(accessToken),
+    staleTime: 5 * 60 * 1000,
+    select: normalizeModelsResponse,
   });
 }
