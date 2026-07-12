@@ -15,7 +15,7 @@ export function HeroSection() {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="rounded-[28px] border border-border bg-surface p-8 shadow-lg md:p-10 lg:p-12"
+      className="glass-card p-8 shadow-lg md:p-10 lg:p-12"
     >
       <div className="grid items-center gap-8 lg:grid-cols-[45fr_55fr] lg:gap-10">
         <div className="flex flex-col justify-center space-y-4">
@@ -23,7 +23,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
-            className="text-base font-medium text-primary"
+            className="text-base font-semibold tracking-wide text-[#7EC8FF] drop-shadow-[0_0_12px_rgba(126,200,255,0.45)]"
           >
             {greeting}
           </motion.p>
@@ -31,17 +31,19 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15, duration: 0.5 }}
-            className="font-heading text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl"
+            className="font-heading text-4xl font-semibold leading-tight tracking-tight text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)] md:text-5xl"
           >
             Welcome back,
             <br />
-            <span className="text-foreground">{displayName}</span>
+            <span className="bg-gradient-to-r from-[#8BCBFF] via-[#63B3FF] to-[#4F9DFF] bg-clip-text text-transparent drop-shadow-none">
+              {displayName}
+            </span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
-            className="max-w-md text-lg text-muted md:text-xl"
+            className="max-w-md text-lg text-[#D4E4F7] md:text-xl"
           >
             Build intelligent AI solutions with RecentThink.
           </motion.p>

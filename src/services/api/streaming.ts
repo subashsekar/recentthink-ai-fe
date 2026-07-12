@@ -1,8 +1,7 @@
 import { config } from '@/config';
 import { storage } from '@/utils/storage';
-import type { LeetCodeStreamEvent } from '@/types/leetcode';
 
-type StreamHandler = (event: LeetCodeStreamEvent) => void;
+type StreamHandler<TEvent> = (event: TEvent) => void;
 
 const decoder = new TextDecoder();
 
@@ -41,7 +40,7 @@ function safeJsonParse<T>(input: string): T | null {
   }
 }
 
-export async function streamLeetCode(
+export async function streamLeetCode<TEvent extends { type: string } = { type: string }>(
   path: string,
   init: {
     method: string;
@@ -57,7 +56,7 @@ export async function streamLeetCode(
     keepalive?: boolean;
     mode?: RequestMode;
   },
-  onEvent: StreamHandler,
+  onEvent: StreamHandler<TEvent>,
 ) {
   const accessToken = storage.get<string>(config.auth.tokenKey);
   const headers: HeadersInit = {
@@ -77,22 +76,29 @@ export async function streamLeetCode(
   });
 
   if (!res.ok) {
-    onEvent({ type: 'error', message: `Request failed (${res.status})`, detail: await res.text() });
+    onEvent({
+      type: 'error',
+      message: `Request failed (${res.status})`,
+      detail: await res.text(),
+    } as unknown as TEvent);
     return;
   }
 
-  await processStreamResponse(res, onEvent);
+  await processStreamResponse<TEvent>(res, onEvent);
 }
 
-export async function processStreamResponse(res: Response, onEvent: StreamHandler) {
+export async function processStreamResponse<TEvent extends { type: string } = { type: string }>(
+  res: Response,
+  onEvent: StreamHandler<TEvent>,
+) {
   const contentType = res.headers.get('content-type') ?? '';
   const isSse = contentType.includes('text/event-stream');
 
   if (!res.body) {
     const text = await res.text();
-    const json = safeJsonParse<LeetCodeStreamEvent | unknown>(text);
+    const json = safeJsonParse<TEvent | unknown>(text);
     if (json && typeof json === 'object' && json && 'type' in (json as Record<string, unknown>)) {
-      onEvent(json as LeetCodeStreamEvent);
+      onEvent(json as TEvent);
     }
     return;
   }
@@ -114,10 +120,10 @@ export async function processStreamResponse(res: Response, onEvent: StreamHandle
       for (const block of parts) {
         for (const data of extractSseDataLines(block)) {
           if (data === '[DONE]') {
-            onEvent({ type: 'done', session_id: '' });
+            onEvent({ type: 'done', session_id: '' } as unknown as TEvent);
             continue;
           }
-          const evt = safeJsonParse<LeetCodeStreamEvent>(data);
+          const evt = safeJsonParse<TEvent>(data);
           if (evt) onEvent(evt);
         }
       }
@@ -127,7 +133,7 @@ export async function processStreamResponse(res: Response, onEvent: StreamHandle
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed) continue;
-        const evt = safeJsonParse<LeetCodeStreamEvent>(trimmed);
+        const evt = safeJsonParse<TEvent>(trimmed);
         if (evt) onEvent(evt);
       }
     }
@@ -139,12 +145,12 @@ export async function processStreamResponse(res: Response, onEvent: StreamHandle
     if (isSse) {
       for (const block of parseSseChunk(tail)) {
         for (const data of extractSseDataLines(block)) {
-          const evt = safeJsonParse<LeetCodeStreamEvent>(data);
+          const evt = safeJsonParse<TEvent>(data);
           if (evt) onEvent(evt);
         }
       }
     } else {
-      const evt = safeJsonParse<LeetCodeStreamEvent>(tail);
+      const evt = safeJsonParse<TEvent>(tail);
       if (evt) onEvent(evt);
     }
   }

@@ -35,7 +35,7 @@ export function ModeSelector({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, isError } = useLeetCodeModes();
-  const modes = (data ?? []) as ModeInfo[];
+  const modes = useMemo(() => (data ?? []) as ModeInfo[], [data]);
 
   const activeSessionId = useChatStore((s) => s.activeSessionId);
   const sessionModeId = useChatStore((s) => s.session?.mode_id);
@@ -121,7 +121,7 @@ export function ModeSelector({ className }: { className?: string }) {
         }}
         disabled={isLoading || isError || modes.length === 0}
         className={cn(
-          'flex items-center gap-2 rounded-xl border border-border bg-secondary-bg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary-bg/80',
+          'flex items-center gap-2 rounded-xl border border-border bg-secondary-bg px-3 py-2 text-sm font-medium text-foreground transition-colors hover-surface/80',
           (isLoading || isError) && 'cursor-not-allowed opacity-70',
         )}
         aria-haspopup="listbox"
@@ -135,7 +135,7 @@ export function ModeSelector({ className }: { className?: string }) {
       {open && modes.length > 0 && (
         <div
           role="listbox"
-          className="absolute top-full z-30 mt-2 w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border bg-surface shadow-xl"
+          className="absolute top-full z-30 mt-2 w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl glass-panel shadow-xl"
         >
           <div className="max-h-[340px] overflow-y-auto p-1">
             {modes.map((mode) => {
@@ -151,7 +151,7 @@ export function ModeSelector({ className }: { className?: string }) {
                   onClick={() => void handleSelect(mode.id)}
                   className={cn(
                     'flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors',
-                    isActive ? 'bg-primary/10' : 'hover:bg-secondary-bg',
+                    isActive ? 'bg-primary/10' : 'hover-surface',
                   )}
                 >
                   <div

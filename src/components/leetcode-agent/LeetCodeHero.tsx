@@ -201,7 +201,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
                 <button
                   type="button"
                   onClick={() => handleAnalyze()}
-                  className="mt-2 inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-foreground hover:bg-secondary-bg"
+                  className="mt-2 inline-flex items-center gap-1 rounded-lg glass-panel px-2 py-1 text-xs font-medium text-foreground hover-surface"
                 >
                   <RefreshCw size={12} />
                   Retry
@@ -210,7 +210,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
             </div>
           )}
 
-          <div className="rounded-2xl border-2 border-primary/25 bg-surface p-4 shadow-[0_0_32px_rgba(255,90,54,0.08)]">
+          <div className="glass-panel rounded-2xl border-2 border-primary/25 p-4 shadow-[0_0_32px_rgba(79,157,255,0.08)]">
             <div className="flex flex-wrap items-start gap-3">
               <Link2 size={18} className="mt-3 shrink-0 text-primary" />
               <div className="min-w-0 flex-1">
@@ -233,7 +233,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
                   type="button"
                   onClick={() => void handleAnalyze()}
                   disabled={isLoading}
-                  className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-primary-hover hover:shadow-[0_0_20px_rgba(255,90,54,0.3)] disabled:opacity-60"
+                  className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-primary-hover hover:shadow-[0_0_20px_rgba(79,157,255,0.3)] disabled:opacity-60"
                 >
                   <Send size={16} />
                   {isLoading ? 'Analyzing...' : 'Analyze'}

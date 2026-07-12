@@ -159,7 +159,7 @@ export function ConversationsSidebar() {
   const showingCount = conversations.length;
 
   return (
-    <aside className="hidden w-[320px] min-w-0 shrink-0 flex-col rounded-[24px] border border-border bg-surface shadow-lg lg:flex">
+    <aside className="hidden w-[320px] min-w-0 shrink-0 flex-col rounded-[24px] glass-panel shadow-lg lg:flex">
       <div className="border-b border-border p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-heading text-base font-semibold text-foreground">Conversations</h2>
@@ -175,14 +175,14 @@ export function ConversationsSidebar() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search conversations..."
-            className="h-9 w-full rounded-xl border border-border bg-secondary-bg py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/15"
+            className="glass-input h-9 w-full rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
         </div>
 
         <button
           type="button"
           onClick={handleNewChat}
-          className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-medium text-white shadow-sm transition-all hover:bg-primary-hover hover:shadow-[0_0_20px_rgba(255,90,54,0.25)]"
+          className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-medium text-white shadow-sm transition-all hover:bg-primary-hover hover:shadow-[0_0_20px_rgba(79,157,255,0.25)]"
         >
           <Plus size={16} />
           New Chat
@@ -207,7 +207,7 @@ export function ConversationsSidebar() {
             <button
               type="button"
               onClick={() => refetch()}
-              className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary-bg"
+              className="rounded-xl border border-border px-3 py-1.5 text-xs font-medium text-foreground hover-surface"
             >
               Try again
             </button>
@@ -256,7 +256,7 @@ export function ConversationsSidebar() {
         {menuOpenId && menuConversation && (
           <div
             ref={menuRef}
-            className="absolute left-2 right-2 z-20 rounded-2xl border border-border bg-surface p-2 shadow-xl"
+            className="absolute left-2 right-2 z-20 rounded-2xl glass-panel p-2 shadow-xl"
             style={{
               top: `${conversations.findIndex((c) => c.session_id === menuOpenId) * 44 + 8}px`,
             }}
@@ -287,7 +287,7 @@ export function ConversationsSidebar() {
           type="button"
           onClick={() => refetch()}
           disabled={isFetching}
-          className="rounded-lg p-1 transition-colors hover:bg-secondary-bg hover:text-foreground disabled:opacity-50"
+          className="rounded-lg p-1 transition-colors hover-surface hover:text-foreground disabled:opacity-50"
           aria-label="Refresh conversations"
         >
           <RefreshCw size={14} className={cn(isFetching && 'animate-spin')} />
@@ -359,7 +359,7 @@ function ConversationItem({
     <div
       className={cn(
         'group relative mb-1 flex items-center gap-2 rounded-xl px-3 py-2.5 transition-colors',
-        isActive ? 'border border-border bg-secondary-bg' : 'hover:bg-secondary-bg/70',
+        isActive ? 'nav-item-active' : 'hover-row',
         menuOpen && 'ring-1 ring-primary/20',
       )}
     >
@@ -378,7 +378,7 @@ function ConversationItem({
         type="button"
         onClick={onMenuToggle}
         className={cn(
-          'shrink-0 rounded-lg p-1 text-muted transition-all hover:bg-surface hover:text-foreground',
+          'shrink-0 rounded-lg p-1 text-muted transition-all nav-item-hover hover:text-foreground',
           menuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
         )}
         aria-label="Conversation options"
@@ -409,7 +409,7 @@ function ContextMenu({
       <button
         type="button"
         onClick={onRename}
-        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary-bg"
+        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover-surface"
       >
         <Edit3 size={15} className="text-muted" />
         Rename
@@ -420,7 +420,7 @@ function ContextMenu({
           onPin();
           onClose();
         }}
-        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary-bg"
+        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-foreground transition-colors hover-surface"
       >
         <Pin size={15} className="text-muted" />
         {conversation.is_pinned ? 'Unpin' : 'Pin'}

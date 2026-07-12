@@ -76,7 +76,7 @@ export function ModelSelector({ className, compact }: ModelSelectorProps) {
         }}
         disabled={isLoading || isError || models.length === 0}
         className={cn(
-          'flex items-center gap-1.5 rounded-xl border border-border bg-secondary-bg text-foreground transition-colors hover:bg-secondary-bg/80',
+          'flex items-center gap-1.5 rounded-xl border border-border bg-secondary-bg text-foreground transition-colors hover-surface/80',
           compact ? 'px-2.5 py-1.5 text-xs' : 'px-3 py-2 text-sm',
           (isLoading || isError) && 'cursor-not-allowed opacity-70',
         )}
@@ -97,7 +97,7 @@ export function ModelSelector({ className, compact }: ModelSelectorProps) {
       {open && models.length > 0 && (
         <div
           role="listbox"
-          className="absolute bottom-full left-0 z-30 mb-2 max-h-[320px] w-[min(280px,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-xl"
+          className="absolute bottom-full left-0 z-30 mb-2 max-h-[320px] w-[min(280px,calc(100vw-2rem))] overflow-y-auto rounded-xl glass-panel p-1 shadow-xl"
         >
           {models.map((model) => {
             const isActive = model.id === effectiveModelId;
@@ -111,7 +111,7 @@ export function ModelSelector({ className, compact }: ModelSelectorProps) {
                 onClick={() => void handleSelect(model.id)}
                 className={cn(
                   'flex w-full flex-col rounded-lg px-3 py-2.5 text-left transition-colors',
-                  isActive ? 'bg-primary/10' : 'text-foreground hover:bg-secondary-bg',
+                  isActive ? 'bg-primary/10' : 'text-foreground hover-surface',
                 )}
               >
                 <div className="flex items-center gap-1.5">
@@ -143,7 +143,7 @@ export function ModelSelector({ className, compact }: ModelSelectorProps) {
       )}
 
       {open && isError && (
-        <div className="absolute bottom-full left-0 z-30 mb-2 min-w-[200px] rounded-xl border border-border bg-surface p-3 text-xs text-muted shadow-xl">
+        <div className="absolute bottom-full left-0 z-30 mb-2 min-w-[200px] rounded-xl glass-panel p-3 text-xs text-muted shadow-xl">
           <p>Could not load models.</p>
           <button
             type="button"

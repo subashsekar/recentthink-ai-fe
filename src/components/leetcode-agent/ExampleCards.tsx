@@ -75,7 +75,7 @@ export function ExampleCards({ onSelectExample }: ExampleCardsProps) {
                   key={problem.id}
                   type="button"
                   onClick={() => onSelectExample?.(problem.url)}
-                  className="group flex w-[148px] shrink-0 flex-col rounded-2xl border border-border bg-surface p-4 text-left shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+                  className="group flex w-[148px] shrink-0 flex-col rounded-2xl glass-panel p-4 text-left shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
                 >
                   <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary/15">
                     <Icon size={18} />
@@ -103,7 +103,7 @@ export function ExampleCards({ onSelectExample }: ExampleCardsProps) {
           <button
             type="button"
             onClick={scrollRight}
-            className="absolute -right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-muted shadow-md transition-colors hover:text-foreground"
+            className="absolute -right-1 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full glass-panel text-muted shadow-md transition-colors hover:text-foreground"
             aria-label="Scroll examples"
           >
             <ChevronRight size={16} />

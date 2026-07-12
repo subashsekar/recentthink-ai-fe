@@ -127,7 +127,7 @@ export function SessionReport() {
           type="button"
           onClick={() => void handleExportPdf()}
           disabled={isExporting || !canExport}
-          className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-medium text-foreground shadow-sm transition-colors hover:bg-secondary-bg disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex items-center gap-2 rounded-xl glass-panel px-3 py-2 text-xs font-medium text-foreground shadow-sm transition-colors hover-surface disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
           {isExporting ? 'Generating PDF...' : 'Download PDF'}
@@ -150,7 +150,7 @@ export function SessionReport() {
                 'rounded-full border px-3 py-1.5 text-xs font-medium transition-colors',
                 isActive
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-border bg-surface text-muted hover:text-foreground',
+                  : 'glass-panel text-muted hover:text-foreground',
                 hasContent && !isActive && 'border-primary/20',
               )}
             >
@@ -162,9 +162,9 @@ export function SessionReport() {
 
       <div
         id="leetcode-report-page"
-        className="min-h-[320px] flex-1 rounded-2xl border border-border bg-secondary-bg/40 p-5 shadow-sm"
+        className="glass-report min-h-[320px] flex-1 overflow-hidden p-5"
       >
-        <div className="mb-3 border-b border-border pb-3">
+        <div className="glass-report-header -mx-5 -mt-5 mb-3 px-5 py-3">
           <h3 className="font-heading text-lg font-semibold text-foreground">
             {REPORT_PAGE_LABELS[currentPage]}
           </h3>
@@ -172,7 +172,11 @@ export function SessionReport() {
             <p className="mt-1 text-xs text-muted">{session.url}</p>
           )}
         </div>
-        {renderPage(currentPage)}
+        {currentPage !== 'problem' ? (
+          <div className="chat-bubble-assistant">{renderPage(currentPage)}</div>
+        ) : (
+          renderPage(currentPage)
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between">
@@ -180,7 +184,7 @@ export function SessionReport() {
           type="button"
           onClick={goPrev}
           disabled={!canPrev}
-          className="flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary-bg disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm text-foreground transition-colors hover-surface disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronLeft size={16} />
           Previous
@@ -192,7 +196,7 @@ export function SessionReport() {
           type="button"
           onClick={goNext}
           disabled={!canNext}
-          className="flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary-bg disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex items-center gap-1 rounded-xl border border-border px-3 py-2 text-sm text-foreground transition-colors hover-surface disabled:cursor-not-allowed disabled:opacity-50"
         >
           Next
           <ChevronRight size={16} />

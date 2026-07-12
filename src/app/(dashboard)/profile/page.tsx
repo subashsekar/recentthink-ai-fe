@@ -1,109 +1,55 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { Card } from '@/components/ui/Card';
-import { PasswordInput } from '@/components/ui/PasswordInput';
+import { Loading } from '@/components/ui/Loading';
 import { Button } from '@/components/ui/Button';
-import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
-import { authService } from '@/services/authService';
-import { changePasswordSchema, type ChangePasswordFormData } from '@/utils/validation';
-import { ROUTES } from '@/constants';
+import { ProfileEditForm } from '@/components/profile/ProfileEditForm';
+import { ProfileEmptyState } from '@/components/profile/ProfileEmptyState';
+import { ProfileStatistics } from '@/components/profile/ProfileStatistics';
+import { useMyProfile } from '@/hooks/profile/useProfileQueries';
+import { handleProfileApiError } from '@/utils/profileError';
 
 export default function ProfilePage() {
-  const { user, logout } = useAuthStore();
-  const router = useRouter();
+  const { user } = useAuthStore();
+  const { data: profile, isLoading, isError, error, refetch, isFetching } = useMyProfile();
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(changePasswordSchema),
-  });
-
-  const mutation = useMutation({
-    mutationFn: authService.changePassword,
-    onSuccess: () => {
-      toast.success('Password changed successfully. Please sign in again.');
-      logout();
-      router.push(ROUTES.LOGIN);
-    },
-    onError: (error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to change password';
-      toast.error(message);
-    },
-  });
-
-  const onSubmit = (data: ChangePasswordFormData) => mutation.mutate(data);
+  const isCreating = profile === null;
+  const showOnboarding = isCreating && !showCreateForm;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-white">Profile</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Manage your account settings
+    <div className="mx-auto w-full max-w-[1400px] space-y-8 px-1 sm:px-2">
+      <div className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">Account</p>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          Profile settings
+        </h1>
+        <p className="max-w-2xl text-sm text-muted sm:text-base">
+          Craft a recruiter-ready presence — identity, platforms, skills, and privacy in one place.
         </p>
       </div>
 
-      <Card>
-        <div className="flex items-center gap-4">
-          <Avatar name={`${user?.first_name || ''} ${user?.last_name || ''}`} size="lg" />
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">
-              {user?.first_name} {user?.last_name}
-            </h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{user?.email}</p>
-            <div className="mt-2 flex items-center gap-2">
-              <Badge variant={user?.is_verified ? 'success' : 'warning'}>
-                {user?.is_verified ? 'Verified' : 'Unverified'}
-              </Badge>
-              <Badge>{user?.role}</Badge>
-            </div>
-          </div>
+      {isLoading ? (
+        <div className="profile-panel rounded-2xl p-10">
+          <Loading message="Loading profile…" />
         </div>
-      </Card>
-
-      <Card>
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">
-          Change Password
-        </h2>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <PasswordInput
-            id="current_password"
-            label="Current password"
-            placeholder="Enter current password"
-            autoComplete="current-password"
-            error={errors.current_password?.message}
-            {...register('current_password')}
-          />
-          <PasswordInput
-            id="new_password"
-            label="New password"
-            placeholder="Enter new password"
-            autoComplete="new-password"
-            error={errors.new_password?.message}
-            {...register('new_password')}
-          />
-          <PasswordInput
-            id="confirm_new_password"
-            label="Confirm new password"
-            placeholder="Confirm new password"
-            autoComplete="new-password"
-            error={errors.confirm_new_password?.message}
-            {...register('confirm_new_password')}
-          />
-          <Button type="submit" isLoading={mutation.isPending}>
-            Change password
+      ) : isError ? (
+        <div className="profile-panel space-y-3 rounded-2xl p-6">
+          <p className="text-sm text-muted">
+            {handleProfileApiError(error, 'Could not load profile')}
+          </p>
+          <Button variant="outline" size="sm" onClick={() => refetch()} isLoading={isFetching}>
+            Retry
           </Button>
-        </form>
-      </Card>
+        </div>
+      ) : showOnboarding ? (
+        <ProfileEmptyState onStart={() => setShowCreateForm(true)} />
+      ) : (
+        <ProfileEditForm profile={profile ?? null} authUser={user} isCreating={isCreating} />
+      )}
+
+      {!isLoading && !isError && !showOnboarding && <ProfileStatistics />}
     </div>
   );
 }

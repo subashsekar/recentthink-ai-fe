@@ -1,10 +1,9 @@
-import Image from 'next/image';
 import { cn } from '@/utils/cn';
 
 interface AvatarProps {
   src?: string;
   name: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   className?: string;
 }
 
@@ -12,6 +11,8 @@ const sizes = {
   sm: 'h-8 w-8 text-xs',
   md: 'h-10 w-10 text-sm',
   lg: 'h-12 w-12 text-base',
+  xl: 'h-20 w-20 text-xl',
+  '2xl': 'h-24 w-24 text-2xl',
 };
 
 function getInitials(name: string): string {
@@ -44,11 +45,11 @@ function getColorFromName(name: string): string {
 export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
   if (src) {
     return (
-      <Image
+      // Absolute URLs from the profile API (CDN / gateway) — native img per API contract.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
         src={src}
         alt={name}
-        width={40}
-        height={40}
         className={cn('rounded-full object-cover', sizes[size], className)}
       />
     );

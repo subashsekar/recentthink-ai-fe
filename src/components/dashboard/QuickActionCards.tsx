@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { BookOpen, Code2, Trophy } from 'lucide-react';
+import { BookOpen, Code2, Shapes, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { ROUTES } from '@/constants';
 
 const actions = [
   {
@@ -10,18 +12,28 @@ const actions = [
     description: 'Practice coding problems with AI assistance.',
     buttonLabel: 'Launch Agent',
     icon: Code2,
+    href: ROUTES.LEETCODE_AGENT,
   },
   {
     title: 'HackerRank Agent',
     description: 'Prepare for coding interviews using AI.',
     buttonLabel: 'Open Agent',
     icon: Trophy,
+    href: ROUTES.HACKERRANK_AGENT,
   },
   {
     title: 'Course Generator',
     description: 'Generate personalized learning roadmaps.',
     buttonLabel: 'Generate Course',
     icon: BookOpen,
+    href: ROUTES.COURSES,
+  },
+  {
+    title: 'DSA Pattern Coach',
+    description: 'Learn how to identify DSA patterns.',
+    buttonLabel: 'Open Coach',
+    icon: Shapes,
+    href: ROUTES.DSA_PATTERN,
   },
 ];
 
@@ -49,30 +61,31 @@ export function QuickActionCards() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+      className="grid gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4"
     >
       {actions.map((action) => (
         <motion.article
           key={action.title}
           variants={cardVariants}
-          whileHover={{ y: -4, scale: 1.01 }}
-          transition={{ duration: 0.2 }}
-          className="group flex flex-col rounded-[28px] border border-border bg-surface p-8 shadow-lg transition-shadow duration-300 hover:shadow-xl"
+          className="group glass-card flex flex-col p-8"
         >
-          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-all duration-300 group-hover:bg-primary/15 group-hover:shadow-[0_0_24px_rgba(255,90,54,0.2)]">
+          <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#4F9DFF]/20 transition-all duration-[250ms] ease-out group-hover:bg-[#4F9DFF]/30 group-hover:shadow-[0_0_28px_rgba(79,157,255,0.35)]">
             <action.icon
               size={26}
-              className="text-primary transition-transform duration-300 group-hover:rotate-6"
+              className="text-[#7EC8FF] transition-transform duration-[250ms] ease-out group-hover:rotate-6"
             />
           </div>
-          <h3 className="font-heading text-xl font-semibold text-foreground">{action.title}</h3>
-          <p className="mt-2 flex-1 text-base leading-relaxed text-muted">{action.description}</p>
-          <Button
-            className="mt-6 w-full rounded-2xl shadow-sm transition-all duration-200 hover:shadow-[0_0_20px_rgba(255,90,54,0.25)]"
-            size="lg"
-          >
-            {action.buttonLabel}
-          </Button>
+          <h3 className="font-heading text-xl font-semibold text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.35)]">
+            {action.title}
+          </h3>
+          <p className="mt-2 flex-1 text-base leading-relaxed text-[#D4E4F7]">
+            {action.description}
+          </p>
+          <Link href={action.href} className="mt-6 block">
+            <Button className="w-full rounded-2xl" size="lg">
+              {action.buttonLabel}
+            </Button>
+          </Link>
         </motion.article>
       ))}
     </motion.div>

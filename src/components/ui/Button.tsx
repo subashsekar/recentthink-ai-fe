@@ -13,11 +13,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants = {
   primary:
-    'bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md active:shadow-none',
-  secondary: 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200 active:bg-zinc-300',
+    'bg-primary text-white hover:bg-primary-hover shadow-[0_0_18px_rgba(79,157,255,0.2)] hover:shadow-[0_0_22px_rgba(79,157,255,0.3)]',
+  secondary: 'border border-white/[0.12] bg-white/[0.08] text-foreground hover:bg-white/[0.12]',
   outline:
-    'border border-zinc-300 text-zinc-700 hover:bg-zinc-50 active:bg-zinc-100 hover:shadow-sm',
-  ghost: 'text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200',
+    'border border-[rgba(110,180,255,0.2)] text-foreground hover:bg-[rgba(79,157,255,0.08)] hover:shadow-[0_0_16px_rgba(79,157,255,0.12)]',
+  ghost: 'text-secondary-text hover:bg-[rgba(79,157,255,0.1)] hover:text-foreground',
   danger: 'bg-error text-white hover:bg-red-600 active:bg-red-700',
 };
 
@@ -46,7 +46,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 ease-out focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:scale-[1.03] active:scale-[0.97]',
+          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-[250ms] ease-out focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-2 focus:ring-offset-transparent disabled:pointer-events-none disabled:opacity-50 hover:scale-[1.02] active:scale-[0.98]',
           variants[variant],
           sizes[size],
           fullWidth && 'w-full',

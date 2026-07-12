@@ -117,7 +117,7 @@ export function FollowUpInput() {
 
   return (
     <section className="border-t border-border px-5 py-5 lg:px-8">
-      <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <div className="rounded-2xl glass-panel p-4 shadow-sm">
         {error && (
           <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-error">
             <AlertCircle size={16} className="mt-0.5 shrink-0" />
@@ -127,7 +127,7 @@ export function FollowUpInput() {
                 <button
                   type="button"
                   onClick={handleRetry}
-                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-foreground hover:bg-secondary-bg"
+                  className="inline-flex items-center gap-1 rounded-lg glass-panel px-2 py-1 text-xs font-medium text-foreground hover-surface"
                 >
                   <RefreshCw size={12} />
                   Retry
@@ -136,7 +136,7 @@ export function FollowUpInput() {
                   <button
                     type="button"
                     onClick={handleRegenerate}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface px-2 py-1 text-xs font-medium text-foreground hover:bg-secondary-bg"
+                    className="inline-flex items-center gap-1 rounded-lg glass-panel px-2 py-1 text-xs font-medium text-foreground hover-surface"
                   >
                     <RotateCcw size={12} />
                     Regenerate
@@ -174,7 +174,7 @@ export function FollowUpInput() {
                 type="button"
                 onClick={() => setValue(suggestion)}
                 disabled={!activeSessionId || isBusy}
-                className="rounded-full border border-border bg-secondary-bg px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-primary/20 hover:text-foreground disabled:opacity-50"
+                className="glass-chip rounded-full px-3 py-1.5 text-xs font-medium disabled:opacity-50"
               >
                 {suggestion}
               </button>
@@ -188,7 +188,7 @@ export function FollowUpInput() {
               onClick={handleSend}
               disabled={!canSend}
               className={cn(
-                'flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-all hover:bg-primary-hover hover:shadow-[0_0_16px_rgba(255,90,54,0.3)]',
+                'flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-sm transition-all hover:bg-primary-hover hover:shadow-[0_0_16px_rgba(79,157,255,0.3)]',
                 !canSend && 'cursor-not-allowed opacity-50',
               )}
               aria-label="Send message"

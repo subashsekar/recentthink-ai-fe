@@ -54,17 +54,17 @@ function defaultStatusMessage(status: number): string {
     case 404:
       return 'Analyze endpoint not found. Check gateway URL configuration.';
     case 422:
-      return 'Invalid analyze request. Provide a valid problem URL or statement.';
+      return 'Invalid request. Please check your inputs and try again.';
     case 429:
       return 'Too many requests. Please wait and try again.';
     case 500:
-      return 'Server error while analyzing. Please try again.';
+      return 'Server error. Please try again.';
     case 502:
     case 503:
     case 504:
       return 'AI service is unavailable. Please try again shortly.';
     default:
-      return `Analyze failed (${status}).`;
+      return `Request failed (${status}).`;
   }
 }
 

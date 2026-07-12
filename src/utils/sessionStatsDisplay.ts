@@ -1,4 +1,24 @@
-import type { LeetCodeSessionDetail, SessionStats } from '@/types/leetcode';
+type SessionStats = {
+  current_model?: unknown;
+  execution_time_ms?: unknown;
+  session_duration_ms?: unknown;
+  token_usage?: unknown;
+  prompt_tokens?: unknown;
+  completion_tokens?: unknown;
+  estimated_cost_usd?: unknown;
+  difficulty?: unknown;
+  pattern?: unknown;
+  tags?: unknown;
+  problem_tags?: unknown;
+  problem_status?: unknown;
+} & Record<string, unknown>;
+
+type SessionLike = {
+  title?: string;
+  updated_at?: string;
+  stats?: unknown;
+  memory?: Record<string, unknown>;
+} | null;
 
 const UNAVAILABLE = '—';
 
@@ -92,22 +112,22 @@ export interface SessionStatsDisplay {
 }
 
 export function mergeSessionStats(
-  liveStats: SessionStats | null | undefined,
-  sessionStats: SessionStats | null | undefined,
+  liveStats: unknown,
+  sessionStats: unknown,
   memory: Record<string, unknown> | undefined,
 ): SessionStats & Record<string, unknown> {
   const memoryStats = asRecord(memory?.stats);
   return {
     ...memoryStats,
-    ...sessionStats,
-    ...liveStats,
+    ...asRecord(sessionStats),
+    ...asRecord(liveStats),
     ...asRecord(memory),
   };
 }
 
 export function buildSessionStatsDisplay(input: {
-  session: LeetCodeSessionDetail | null;
-  liveStats: SessionStats | null;
+  session: SessionLike;
+  liveStats: unknown;
   modelLabel: string;
   modeLabel: string;
 }): SessionStatsDisplay {

@@ -27,6 +27,7 @@ const joinUrl = (...parts: Array<string | undefined>) =>
 
 const apiBase = joinUrl(config.api.baseUrl, config.api.prefix);
 const gatewayBase = joinUrl(config.api.baseUrl);
+const hackerrankBase = joinUrl(config.api.hackerrankBaseUrl);
 
 const shouldDebug = () => config.api.debug && process.env.NODE_ENV !== 'production';
 
@@ -49,6 +50,15 @@ export const apiClient: AxiosInstance = axios.create({
 // e.g. `/leetcode/*` forwarded to AI service.
 export const gatewayClient: AxiosInstance = axios.create({
   baseURL: gatewayBase,
+  timeout: config.api.timeout,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// HackerRank mentor routes may hit gateway or direct AI service (see NEXT_PUBLIC_HACKERRANK_SERVICE_URL).
+export const hackerrankClient: AxiosInstance = axios.create({
+  baseURL: hackerrankBase,
   timeout: config.api.timeout,
   headers: {
     'Content-Type': 'application/json',
@@ -87,6 +97,24 @@ gatewayClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
+hackerrankClient.interceptors.request.use(
+  (requestConfig: InternalAxiosRequestConfig) => {
+    const accessToken = storage.get<string>(config.auth.tokenKey);
+    if (accessToken && requestConfig.headers) {
+      requestConfig.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    if (shouldDebug()) {
+      console.debug(
+        '[hackerrank]',
+        requestConfig.method?.toUpperCase(),
+        fullUrl(requestConfig, hackerrankBase),
+      );
+    }
+    return requestConfig;
+  },
+  (error) => Promise.reject(error),
+);
+
 gatewayClient.interceptors.response.use(
   (response) => {
     if (shouldDebug()) {
@@ -108,6 +136,33 @@ gatewayClient.interceptors.response.use(
         error.response?.status ?? 'ERR',
         cfg?.method?.toUpperCase(),
         cfg ? fullUrl(cfg, gatewayBase) : '(no-config)',
+      );
+    }
+    return Promise.reject(error);
+  },
+);
+
+hackerrankClient.interceptors.response.use(
+  (response) => {
+    if (shouldDebug()) {
+      console.debug(
+        '[hackerrank]',
+        response.status,
+        response.config.method?.toUpperCase(),
+        fullUrl(response.config, hackerrankBase),
+      );
+    }
+    return response;
+  },
+  (error: AxiosError) => {
+    if (shouldDebug()) {
+      const cfg = error.config as InternalAxiosRequestConfig | undefined;
+
+      console.debug(
+        '[hackerrank]',
+        error.response?.status ?? 'ERR',
+        cfg?.method?.toUpperCase(),
+        cfg ? fullUrl(cfg, hackerrankBase) : '(no-config)',
       );
     }
     return Promise.reject(error);

@@ -15,6 +15,7 @@ import type {
   AdminLoginResponse,
 } from '@/types/auth';
 import { apiClient } from '@/services/api/client';
+import { accountApi } from '@/services/api/account';
 
 export const authService = {
   async login(data: LoginRequest) {
@@ -71,6 +72,11 @@ export const authService = {
     const response = await apiClient.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, data);
     return response.data;
   },
+
+  disableAccount: accountApi.disable,
+  deleteAccount: accountApi.delete,
+  enableAccount: accountApi.enable,
+  getAccountStatus: accountApi.getStatus,
 
   async adminLogin(data: LoginRequest) {
     const response = await apiClient.post<AdminLoginResponse>(API_ENDPOINTS.ADMIN.LOGIN, data);

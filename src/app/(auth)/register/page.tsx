@@ -6,7 +6,7 @@ import { RegisterForm } from '@/components/auth/RegisterForm';
 
 export default function RegisterPage() {
   return (
-    <AuthLayout>
+    <AuthLayout useGifBranding>
       <AuthCard>
         <RegisterForm />
       </AuthCard>

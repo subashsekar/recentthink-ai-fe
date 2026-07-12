@@ -8,6 +8,10 @@ export interface User {
   role: Role;
   is_verified: boolean;
   is_active: boolean;
+  is_blocked?: boolean;
+  disabled_at?: string | null;
+  blocked_at?: string | null;
+  blocked_reason?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -57,6 +61,27 @@ export interface ChangePasswordRequest {
   current_password: string;
   new_password: string;
   confirm_new_password: string;
+}
+
+export interface AccountStatus {
+  is_active: boolean;
+  is_blocked: boolean;
+  disabled_at?: string | null;
+  blocked_at?: string | null;
+}
+
+export interface DisableAccountRequest {
+  password: string;
+}
+
+export interface EnableAccountRequest {
+  email: string;
+  password: string;
+}
+
+export interface DeleteAccountRequest {
+  password: string;
+  confirm: true;
 }
 
 export interface RefreshTokenRequest {

@@ -17,8 +17,8 @@ export function SessionStatsTrigger({ className }: SessionStatsTriggerProps) {
       type="button"
       onClick={() => setStatsDrawerOpen(!statsDrawerOpen)}
       className={cn(
-        'rounded-2xl p-2.5 text-muted transition-all duration-200 hover:bg-secondary-bg hover:text-foreground',
-        statsDrawerOpen && 'bg-secondary-bg text-foreground',
+        'rounded-2xl p-2.5 text-muted transition-all duration-200 nav-item-hover hover:text-foreground',
+        statsDrawerOpen && 'bg-[rgba(79,157,255,0.12)] text-foreground',
         className,
       )}
       aria-label={statsDrawerOpen ? 'Close session stats' : 'Open session stats'}

@@ -1,5 +1,6 @@
 export const APP_EVENTS = {
   LEETCODE_NEW_CHAT: 'recentthink:leetcode:new-chat',
+  HACKERRANK_NEW_CHAT: 'recentthink:hackerrank:new-chat',
 } as const;
 
 export type AppEventName = (typeof APP_EVENTS)[keyof typeof APP_EVENTS];

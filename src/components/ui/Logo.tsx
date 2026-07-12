@@ -20,20 +20,15 @@ export function Logo({
 }: LogoProps) {
   if (variant === 'navbar') {
     return (
-      <span
-        className={cn(
-          'relative flex h-12 w-[160px] shrink-0 items-center justify-start overflow-hidden sm:w-[190px] lg:w-[220px]',
-          className,
-        )}
-      >
+      <span className={cn('inline-flex items-center overflow-visible', className)}>
         <Image
           src="/recentthink-logo.svg"
           alt="RecentThink"
-          width={1024}
-          height={1024}
+          width={520}
+          height={130}
           priority
           unoptimized
-          className="h-[168px] w-[168px] max-w-none shrink-0 object-cover object-[24%_34%] sm:h-[180px] sm:w-[180px] lg:h-[200px] lg:w-[200px]"
+          className="h-[130px] w-auto max-w-[520px] object-contain object-left"
         />
       </span>
     );

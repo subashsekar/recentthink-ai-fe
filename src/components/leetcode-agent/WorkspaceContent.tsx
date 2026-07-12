@@ -24,7 +24,7 @@ export function WorkspaceContent() {
   );
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[24px] border border-border bg-surface shadow-lg">
+    <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-[24px] glass-panel shadow-lg">
       <WorkspaceHeader />
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {hasSession ? (

@@ -1,9 +1,11 @@
 'use client';
 
 import type { Components } from 'react-markdown';
+import { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Loader2 } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { cn } from '@/utils/cn';
 import { plainTextToLeetCodeMarkdown } from '@/utils/formatProblemStatement';
 
@@ -71,6 +73,12 @@ export function ReportContent({
     (variant === 'leetcode-problem' && plain?.trim() ? plainTextToLeetCodeMarkdown(plain) : '');
 
   const hasContent = Boolean(resolvedMarkdown || html?.trim() || plain?.trim());
+  const sanitizedHtml = useMemo(() => {
+    const raw = html?.trim();
+    if (!raw) return '';
+    // Prevent XSS when backend returns raw HTML (e.g., scraped statements).
+    return DOMPurify.sanitize(raw, { USE_PROFILES: { html: true } });
+  }, [html]);
 
   if (isLoading && !hasContent) {
     return (
@@ -87,7 +95,7 @@ export function ReportContent({
 
   const isLeetCode = variant === 'leetcode-problem';
 
-  if (html?.trim() && !resolvedMarkdown) {
+  if (sanitizedHtml && !resolvedMarkdown) {
     return (
       <div
         className={cn(
@@ -95,7 +103,7 @@ export function ReportContent({
           'prose prose-sm max-w-none text-sm leading-relaxed text-foreground',
           className,
         )}
-        dangerouslySetInnerHTML={{ __html: html }}
+        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       />
     );
   }

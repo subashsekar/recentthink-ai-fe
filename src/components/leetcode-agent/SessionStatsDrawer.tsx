@@ -44,7 +44,7 @@ export function SessionStatsDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 bg-black/20"
+            className="fixed inset-0 z-40 glass-overlay"
             onClick={() => setStatsDrawerOpen(false)}
           />
 
@@ -56,7 +56,7 @@ export function SessionStatsDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-y-0 right-0 z-50 flex w-[320px] flex-col rounded-l-[24px] border border-border bg-surface shadow-2xl"
+            className="fixed inset-y-0 right-0 z-50 flex w-[320px] flex-col rounded-l-[24px] glass-panel shadow-2xl"
           >
             <div className="flex items-start justify-between border-b border-border p-4">
               <div>
@@ -68,7 +68,7 @@ export function SessionStatsDrawer() {
               <button
                 type="button"
                 onClick={() => setStatsDrawerOpen(false)}
-                className="rounded-xl p-1.5 text-muted transition-colors hover:bg-secondary-bg hover:text-foreground"
+                className="rounded-xl p-1.5 text-muted transition-colors hover-surface hover:text-foreground"
                 aria-label="Close"
               >
                 <X size={18} />
@@ -97,7 +97,7 @@ export function SessionStatsDrawer() {
                   <button
                     type="button"
                     onClick={() => refetch()}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary-bg"
+                    className="inline-flex items-center gap-1.5 rounded-xl glass-panel px-3 py-1.5 text-xs font-medium text-foreground hover-surface"
                   >
                     <RefreshCw size={12} />
                     Try again

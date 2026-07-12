@@ -6,28 +6,36 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { LoadingButton } from '@/components/ui/LoadingButton';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { Alert } from '@/components/ui/Alert';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '@/store/authStore';
 import { loginSchema, type LoginFormData } from '@/utils/validation';
+import { getLoginAccountError } from '@/utils/authError';
 import { ROUTES } from '@/constants';
 
 export function LoginForm() {
   const router = useRouter();
   const { login } = useAuthStore();
+  const [accountError, setAccountError] = useState<ReturnType<typeof getLoginAccountError> | null>(
+    null,
+  );
 
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
   const mutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (response) => {
+      setAccountError(null);
       const { access_token, refresh_token, user } = response;
       login(access_token, refresh_token, user);
       toast.success('Welcome back!');
@@ -38,17 +46,51 @@ export function LoginForm() {
       );
     },
     onError: (error: unknown) => {
-      const msg = error instanceof Error ? error.message : 'Invalid email or password';
-      toast.error(msg);
+      const parsed = getLoginAccountError(error);
+      setAccountError(parsed);
+      if (parsed.kind === 'other') {
+        toast.error(parsed.message);
+      }
     },
   });
 
-  const onSubmit = (data: LoginFormData) => mutation.mutate(data);
+  const onSubmit = (data: LoginFormData) => {
+    setAccountError(null);
+    mutation.mutate(data);
+  };
+
+  const emailForReEnable = getValues('email') || '';
 
   return (
     <div className="animate-fade-in">
       <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Welcome back</h1>
       <p className="mt-2 text-sm text-muted">Sign in to your account to continue</p>
+
+      {accountError?.kind === 'blocked' && (
+        <div className="mt-6">
+          <Alert variant="error">{accountError.message}</Alert>
+        </div>
+      )}
+
+      {accountError?.kind === 'disabled' && (
+        <div className="mt-6 space-y-2">
+          <Alert variant="warning">
+            <span>
+              Account disabled.{' '}
+              <Link
+                href={
+                  emailForReEnable
+                    ? `${ROUTES.RE_ENABLE_ACCOUNT}?email=${encodeURIComponent(emailForReEnable)}`
+                    : ROUTES.RE_ENABLE_ACCOUNT
+                }
+                className="font-medium underline underline-offset-2"
+              >
+                Re-enable account
+              </Link>
+            </span>
+          </Alert>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-10 space-y-6">
         <div
