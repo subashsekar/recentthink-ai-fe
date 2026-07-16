@@ -40,7 +40,7 @@ export function ExampleCards({ onSelectExample }: ExampleCardsProps) {
   return (
     <section className="border-t border-border px-5 py-5 lg:px-8">
       <h2 className="mb-4 font-heading text-base font-semibold text-foreground">
-        Choose an Example
+        Popular challenges
       </h2>
 
       {isError && (

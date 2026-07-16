@@ -13,6 +13,12 @@ import {
   type NormalizedAnalyzeResult,
   type ReportPage,
 } from '@/utils/leetcodeSession';
+import type { MentorConversationMessage } from '@/utils/leetcodeConversation';
+import {
+  clearSessionConversation,
+  loadSessionConversation,
+  saveSessionConversation,
+} from '@/utils/leetcodeConversationStorage';
 
 interface ChatState {
   activeSessionId: string | null;
@@ -30,6 +36,7 @@ interface ChatState {
   defaultModeId: string;
   selectedModeId: string | null;
   statsDrawerOpen: boolean;
+  conversation: MentorConversationMessage[];
 
   startNewChat: () => void;
   setActiveSessionId: (sessionId: string | null) => void;
@@ -45,6 +52,9 @@ interface ChatState {
   applyFollowUpResult: (payload: unknown) => void;
   applyStreamEvent: (event: LeetCodeStreamEvent) => void;
   hydrateFromSession: (result: NormalizedAnalyzeResult, defaultModelId?: string | null) => void;
+  appendConversationMessage: (message: MentorConversationMessage) => void;
+  updateConversationMessage: (id: string, patch: Partial<MentorConversationMessage>) => void;
+  resetConversationForNewAnalysis: () => void;
 }
 
 const emptyRoles = (): Record<LeetCodeAgentRole, string> => ({
@@ -70,7 +80,12 @@ const initialState = {
   defaultModeId: 'learning',
   selectedModeId: null as string | null,
   statsDrawerOpen: false,
+  conversation: [] as MentorConversationMessage[],
 };
+
+function persistConversation(sessionId: string | null, messages: MentorConversationMessage[]) {
+  saveSessionConversation(sessionId, messages);
+}
 
 export const useChatStore = create<ChatState>((set, get) => ({
   ...initialState,
@@ -82,6 +97,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       defaultModeId: get().defaultModeId,
       selectedModeId: get().selectedModeId,
       statsDrawerOpen: false,
+      conversation: [],
     }),
 
   setActiveSessionId: (activeSessionId) => set({ activeSessionId }),
@@ -102,9 +118,30 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   setStatsDrawerOpen: (statsDrawerOpen) => set({ statsDrawerOpen }),
 
-  hydrateFromSession: (result, defaultModelId?: string | null) =>
+  appendConversationMessage: (message) =>
+    set((state) => {
+      const conversation = [...state.conversation, message];
+      persistConversation(state.activeSessionId, conversation);
+      return { conversation };
+    }),
+
+  updateConversationMessage: (id, patch) =>
+    set((state) => {
+      const conversation = state.conversation.map((m) => (m.id === id ? { ...m, ...patch } : m));
+      persistConversation(state.activeSessionId, conversation);
+      return { conversation };
+    }),
+
+  resetConversationForNewAnalysis: () => {
+    const sessionId = get().activeSessionId;
+    clearSessionConversation(sessionId);
+    set({ conversation: [] });
+  },
+
+  hydrateFromSession: (result, defaultModelId?: string | null) => {
+    const sessionId = result.session.session_id;
     set({
-      activeSessionId: result.session.session_id,
+      activeSessionId: sessionId,
       session: result.session,
       problemStatement: result.problemStatement,
       problemStatementMarkdown: result.problemStatementMarkdown,
@@ -116,11 +153,15 @@ export const useChatStore = create<ChatState>((set, get) => ({
       selectedModeId: result.session.mode_id ?? get().defaultModeId,
       isAnalyzing: false,
       isStreaming: false,
-    }),
+      conversation: loadSessionConversation(sessionId),
+    });
+  },
 
-  applyAnalyzeResult: (result) =>
+  applyAnalyzeResult: (result) => {
+    const sessionId = result.session.session_id;
+    clearSessionConversation(sessionId);
     set({
-      activeSessionId: result.session.session_id,
+      activeSessionId: sessionId,
       session: result.session,
       problemStatement: result.problemStatement,
       problemStatementMarkdown: result.problemStatementMarkdown,
@@ -132,7 +173,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
       selectedModeId: result.session.mode_id ?? get().defaultModeId,
       isAnalyzing: false,
       isStreaming: false,
-    }),
+      conversation: [],
+    });
+  },
 
   applyFollowUpResult: (payload) => {
     const state = get();
@@ -247,8 +290,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
         break;
       case 'complete': {
         const normalized = normalizeAnalyzeResponse(event);
+        const sessionId = normalized.session.session_id;
+        clearSessionConversation(sessionId);
         set({
-          activeSessionId: normalized.session.session_id,
+          activeSessionId: sessionId,
           session: normalized.session,
           problemStatement: normalized.problemStatement,
           problemStatementMarkdown: normalized.problemStatementMarkdown,
@@ -260,6 +305,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           currentPage: 'problem',
           isAnalyzing: false,
           isStreaming: false,
+          conversation: [],
         });
         break;
       }

@@ -9,7 +9,7 @@ export function LeetCodeAgentPage() {
   return (
     <>
       <div className="min-h-0 w-full max-w-full overflow-x-hidden">
-        <div className="grid min-h-0 w-full max-w-full grid-cols-1 gap-0 overflow-x-hidden lg:grid-cols-[72px_320px_minmax(0,1fr)] lg:gap-0">
+        <div className="grid min-h-0 w-full max-w-full grid-cols-1 gap-4 overflow-x-hidden lg:grid-cols-[72px_300px_minmax(0,1fr)] lg:gap-5">
           <IconRail />
           <ConversationsSidebar />
           <WorkspaceContent />

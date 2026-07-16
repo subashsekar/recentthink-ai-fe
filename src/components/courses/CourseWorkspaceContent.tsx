@@ -64,6 +64,27 @@ export function CourseWorkspaceContent() {
                 Generate a personalized course, then continue it from history anytime.
               </p>
             </div>
+            <div>
+              <h2 className="font-heading text-sm font-semibold text-foreground">Quick topics</h2>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {['Python', 'FastAPI', 'AWS', 'AI', 'React'].map((skill) => (
+                  <button
+                    key={skill}
+                    type="button"
+                    onClick={() =>
+                      useCourseStore.getState().setForm({
+                        skill,
+                        programming_language: skill,
+                        goal: `Master ${skill}`,
+                      })
+                    }
+                    className="rounded-xl border border-border bg-secondary-bg/40 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
+            </div>
             <CourseExampleCards onSelect={() => undefined} />
             <CourseGenerateForm embedded />
           </div>

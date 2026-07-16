@@ -7,6 +7,8 @@ import { AnimatedBackground } from '@/components/layout/AnimatedBackground';
 import { Navbar } from '@/components/ui/Navbar';
 import { Sidebar } from '@/components/ui/Sidebar';
 import { SearchBar } from '@/components/ui/SearchBar';
+import { CommandPaletteHotkeys } from '@/components/search/CommandPaletteHotkeys';
+import { useCommandPaletteStore } from '@/components/search/commandPaletteStore';
 import { SessionStatsTrigger } from '@/components/leetcode-agent/SessionStatsTrigger';
 import { SessionStatsTrigger as HackerRankSessionStatsTrigger } from '@/components/hackerrank-agent/SessionStatsTrigger';
 import { ROUTES } from '@/constants';
@@ -25,11 +27,12 @@ function isDsaPatternAgentPath(pathname: string) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const paletteOpen = useCommandPaletteStore((s) => s.open);
   const isLeetCodeAgent = pathname === ROUTES.LEETCODE_AGENT;
   const isHackerRankAgent = pathname === ROUTES.HACKERRANK_AGENT;
   const isCoursesAgent = isCoursesAgentPath(pathname);
   const isDsaPatternAgent = isDsaPatternAgentPath(pathname);
-  const isFullBleedAgent =
+  const isAgentWorkspace =
     isLeetCodeAgent || isHackerRankAgent || isCoursesAgent || isDsaPatternAgent;
   const useAnimatedBackground = hasAnimatedBackground(pathname);
 
@@ -37,17 +40,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div
       className={cn(
         'mx-auto flex min-h-screen w-full max-w-full gap-0 p-0',
-        !isFullBleedAgent && 'max-w-[1680px] gap-5 p-4 lg:gap-7 lg:p-6',
+        !isAgentWorkspace && 'max-w-[1680px] gap-5 p-4 lg:gap-7 lg:p-6',
       )}
     >
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         glass={useAnimatedBackground}
-        className={isFullBleedAgent ? 'lg:hidden' : undefined}
+        className={isAgentWorkspace ? 'lg:hidden' : undefined}
       />
 
-      <div className={cn('flex min-w-0 flex-1 flex-col', !isFullBleedAgent && 'gap-4 lg:gap-6')}>
+      <div className={cn('flex min-w-0 flex-1 flex-col', !isAgentWorkspace && 'gap-4 lg:gap-6')}>
         <Navbar
           onMenuClick={() => setSidebarOpen(true)}
           glass={useAnimatedBackground}
@@ -59,18 +62,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             ) : undefined
           }
           className={
-            isFullBleedAgent
+            isAgentWorkspace
               ? 'mb-0 w-full max-w-full rounded-none border-x-0 border-t-0'
               : undefined
           }
         />
 
-        <div className="md:hidden">
+        <div className={cn('md:hidden', paletteOpen && 'relative z-[70]')}>
           <SearchBar glass={useAnimatedBackground} />
         </div>
 
-        {isFullBleedAgent ? (
-          <div className="min-h-0 flex-1">
+        {isAgentWorkspace ? (
+          <div className="min-h-0 flex-1 p-4 lg:p-5">
             <main className="min-w-0 w-full max-w-full overflow-x-hidden">{children}</main>
           </div>
         ) : (
@@ -82,10 +85,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <ProtectedRoute>
+      <CommandPaletteHotkeys />
       {useAnimatedBackground ? (
         <AnimatedBackground>{layoutContent}</AnimatedBackground>
       ) : (
-        <div className="min-h-screen bg-background overflow-x-hidden">{layoutContent}</div>
+        <div className="min-h-screen overflow-x-hidden bg-background">{layoutContent}</div>
       )}
     </ProtectedRoute>
   );

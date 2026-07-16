@@ -1,19 +1,50 @@
 import { API_ENDPOINTS } from '@/constants';
 import type {
-  AdminAnalytics,
-  AdminModels,
-  AdminUsage,
   AdminUserActionBody,
   AdminUserDetail,
   AdminUsersQuery,
   AdminUsersResponse,
+  AnalyticsCharts,
+  AnalyticsDashboard,
+  AnalyticsExportFormat,
+  AnalyticsExportReport,
+  AnalyticsUsersQuery,
+  AnalyticsUsersResponse,
   AuditLogsQuery,
   AuditLogsResponse,
   BroadcastPayload,
+  CostAnalytics,
   Dashboard,
+  FeatureAnalytics,
+  ModelAnalytics,
+  ProviderAnalytics,
   SystemHealth,
+  TokenAnalytics,
+  UserUsageDetail,
 } from '@/types/admin';
 import { apiClient } from './client';
+
+function filenameFromDisposition(header: string | undefined, fallback: string) {
+  if (!header) return fallback;
+  const match = /filename\*?=(?:UTF-8''|")?([^\";]+)"?/i.exec(header);
+  if (!match?.[1]) return fallback;
+  try {
+    return decodeURIComponent(match[1].replace(/"/g, '').trim());
+  } catch {
+    return match[1].replace(/"/g, '').trim();
+  }
+}
+
+function triggerBlobDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
 
 export const adminApi = {
   getDashboard: async () => {
@@ -58,19 +89,82 @@ export const adminApi = {
     return res.data;
   },
 
+  getAnalyticsDashboard: async () => {
+    const res = await apiClient.get<AnalyticsDashboard>(API_ENDPOINTS.ADMIN.ANALYTICS_DASHBOARD);
+    return res.data;
+  },
+
+  /** @deprecated use getAnalyticsDashboard */
   getAnalytics: async () => {
-    const res = await apiClient.get<AdminAnalytics>(API_ENDPOINTS.ADMIN.ANALYTICS);
+    const res = await apiClient.get<AnalyticsDashboard>(API_ENDPOINTS.ADMIN.ANALYTICS_DASHBOARD);
     return res.data;
   },
 
-  getUsage: async () => {
-    const res = await apiClient.get<AdminUsage>(API_ENDPOINTS.ADMIN.USAGE);
+  getTokenAnalytics: async () => {
+    const res = await apiClient.get<TokenAnalytics>(API_ENDPOINTS.ADMIN.ANALYTICS_TOKENS);
     return res.data;
   },
 
+  getFeatureAnalytics: async () => {
+    const res = await apiClient.get<FeatureAnalytics>(API_ENDPOINTS.ADMIN.ANALYTICS_FEATURES);
+    return res.data;
+  },
+
+  getModelAnalytics: async () => {
+    const res = await apiClient.get<ModelAnalytics>(API_ENDPOINTS.ADMIN.ANALYTICS_MODELS);
+    return res.data;
+  },
+
+  /** @deprecated use getModelAnalytics */
   getModels: async () => {
-    const res = await apiClient.get<AdminModels>(API_ENDPOINTS.ADMIN.MODELS);
+    const res = await apiClient.get<ModelAnalytics>(API_ENDPOINTS.ADMIN.ANALYTICS_MODELS);
     return res.data;
+  },
+
+  getProviderAnalytics: async () => {
+    const res = await apiClient.get<ProviderAnalytics>(API_ENDPOINTS.ADMIN.ANALYTICS_PROVIDERS);
+    return res.data;
+  },
+
+  getAnalyticsUsers: async (params?: AnalyticsUsersQuery) => {
+    const res = await apiClient.get<AnalyticsUsersResponse>(API_ENDPOINTS.ADMIN.ANALYTICS_USERS, {
+      params,
+    });
+    return res.data;
+  },
+
+  getAnalyticsUser: async (userId: string) => {
+    const res = await apiClient.get<UserUsageDetail>(API_ENDPOINTS.ADMIN.ANALYTICS_USER(userId));
+    return res.data;
+  },
+
+  getAnalyticsCharts: async () => {
+    const res = await apiClient.get<AnalyticsCharts>(API_ENDPOINTS.ADMIN.ANALYTICS_CHARTS);
+    return res.data;
+  },
+
+  getCostAnalytics: async () => {
+    const res = await apiClient.get<CostAnalytics>(API_ENDPOINTS.ADMIN.ANALYTICS_COSTS);
+    return res.data;
+  },
+
+  /** @deprecated prefer analytics endpoints */
+  getUsage: async () => {
+    const res = await apiClient.get(API_ENDPOINTS.ADMIN.USAGE);
+    return res.data;
+  },
+
+  exportAnalyticsReport: async (report: AnalyticsExportReport, format: AnalyticsExportFormat) => {
+    const res = await apiClient.get(API_ENDPOINTS.ADMIN.ANALYTICS_EXPORT, {
+      params: { report, format },
+      responseType: 'blob',
+    });
+    const fallbackExt = format === 'excel' ? 'xlsx' : format;
+    const filename = filenameFromDisposition(
+      res.headers['content-disposition'] as string | undefined,
+      `${report}.${fallbackExt}`,
+    );
+    triggerBlobDownload(res.data as Blob, filename);
   },
 
   getAuditLogs: async (params?: AuditLogsQuery) => {

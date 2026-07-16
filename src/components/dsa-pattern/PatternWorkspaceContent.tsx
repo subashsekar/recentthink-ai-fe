@@ -64,6 +64,25 @@ export function PatternWorkspaceContent() {
               </h1>
               <p className="mt-2 text-sm text-muted">Learn how to identify DSA patterns</p>
             </div>
+            <div>
+              <h2 className="font-heading text-sm font-semibold text-foreground">
+                Popular patterns
+              </h2>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {['Arrays', 'Trees', 'Graphs', 'Dynamic Programming', 'Sliding Window'].map(
+                  (pattern) => (
+                    <button
+                      key={pattern}
+                      type="button"
+                      onClick={() => useDsaPatternStore.getState().setForm({ pattern })}
+                      className="rounded-xl border border-border bg-secondary-bg/40 px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                    >
+                      {pattern}
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
             <PatternExampleCards />
             <PatternGenerateForm embedded />
           </div>

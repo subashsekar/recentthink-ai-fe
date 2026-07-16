@@ -5,13 +5,11 @@ import { usePathname } from 'next/navigation';
 import {
   Activity,
   BarChart3,
-  Cpu,
   LayoutDashboard,
   Megaphone,
   ScrollText,
   Users,
   X,
-  Gauge,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { ROUTES } from '@/constants';
@@ -24,9 +22,7 @@ interface AdminSidebarProps {
 const navItems = [
   { href: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
   { href: ROUTES.ADMIN_USERS, label: 'Users', icon: Users },
-  { href: ROUTES.ADMIN_ANALYTICS, label: 'Analytics', icon: BarChart3 },
-  { href: ROUTES.ADMIN_USAGE, label: 'Usage', icon: Gauge },
-  { href: ROUTES.ADMIN_MODELS, label: 'Models', icon: Cpu },
+  { href: ROUTES.ADMIN_AI_USAGE, label: 'AI Usage Analytics', icon: BarChart3 },
   { href: ROUTES.ADMIN_AUDIT, label: 'Audit Logs', icon: ScrollText },
   { href: ROUTES.ADMIN_HEALTH, label: 'System Health', icon: Activity },
   { href: ROUTES.ADMIN_BROADCAST, label: 'Broadcast', icon: Megaphone },
@@ -34,6 +30,9 @@ const navItems = [
 
 function isActive(pathname: string, href: string) {
   if (href === ROUTES.ADMIN_USERS) {
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+  if (href === ROUTES.ADMIN_AI_USAGE) {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
   return pathname === href;

@@ -79,8 +79,10 @@ export function ConversationsSidebar() {
   const patchSession = usePatchSessionMutation();
   const deleteSession = useDeleteSessionMutation();
 
-  const conversations = history?.items ?? [];
-  const menuConversation = conversations.find((c) => c.session_id === menuOpenId);
+  const sessions = history?.items ?? [];
+  const menuConversation = sessions.find((c) => c.session_id === menuOpenId);
+  const pinnedSessions = sessions.filter((s) => s.is_pinned);
+  const recentSessions = sessions.filter((s) => !s.is_pinned);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedQuery(searchQuery.trim()), 300);
@@ -101,7 +103,7 @@ export function ConversationsSidebar() {
     startNewChat();
     setMenuOpenId(null);
     emitAppEvent(APP_EVENTS.HACKERRANK_NEW_CHAT);
-    toast.success('Start a new chat by pasting a HackerRank challenge URL.');
+    toast.success('Start a new session by pasting a HackerRank challenge URL.');
   };
 
   const handleSelectConversation = async (conversation: HackerRankSessionSummary) => {
@@ -113,7 +115,7 @@ export function ConversationsSidebar() {
       const session = await hackerrankApi.getSession(conversation.session_id);
       hydrateFromSession(normalizeAnalyzeResponse(session), defaultModelId);
     } catch {
-      toast.error('Failed to load conversation.');
+      toast.error('Failed to load session.');
       setActiveSessionId(null);
     }
   };
@@ -130,7 +132,7 @@ export function ConversationsSidebar() {
       setMenuOpenId(null);
       toast.success('Conversation renamed.');
     } catch {
-      toast.error('Failed to rename conversation.');
+      toast.error('Failed to rename session.');
     }
   };
 
@@ -142,7 +144,7 @@ export function ConversationsSidebar() {
       });
       setMenuOpenId(null);
     } catch {
-      toast.error('Failed to update conversation.');
+      toast.error('Failed to update session.');
     }
   };
 
@@ -154,20 +156,20 @@ export function ConversationsSidebar() {
         emitAppEvent(APP_EVENTS.HACKERRANK_NEW_CHAT);
       }
       setMenuOpenId(null);
-      toast.success('Conversation deleted.');
+      toast.success('Session deleted.');
     } catch {
-      toast.error('Failed to delete conversation.');
+      toast.error('Failed to delete session.');
     }
   };
 
-  const totalLabel = history?.total ?? conversations.length;
-  const showingCount = conversations.length;
+  const totalLabel = history?.total ?? sessions.length;
+  const showingCount = sessions.length;
 
   return (
-    <aside className="hidden w-[320px] min-w-0 shrink-0 flex-col rounded-[24px] glass-panel shadow-lg lg:flex">
+    <aside className="hidden w-full min-w-0 shrink-0 flex-col rounded-[24px] glass-panel shadow-lg lg:flex">
       <div className="border-b border-border p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-heading text-base font-semibold text-foreground">Conversations</h2>
+          <h2 className="font-heading text-base font-semibold text-foreground">Recent Sessions</h2>
         </div>
 
         <div className="relative">
@@ -179,7 +181,7 @@ export function ConversationsSidebar() {
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search conversations..."
+            placeholder="Search sessions..."
             className="glass-input h-9 w-full rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
         </div>
@@ -190,7 +192,7 @@ export function ConversationsSidebar() {
           className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-medium text-white shadow-sm transition-all hover:bg-primary-hover hover:shadow-[0_0_20px_rgba(79,157,255,0.25)]"
         >
           <Plus size={16} />
-          New Chat
+          New Session
         </button>
       </div>
 
@@ -207,7 +209,7 @@ export function ConversationsSidebar() {
           <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
             <AlertCircle size={28} className="text-error" />
             <p className="text-sm text-muted">
-              {error instanceof Error ? error.message : 'Failed to load conversations.'}
+              {error instanceof Error ? error.message : 'Failed to load sessions.'}
             </p>
             <button
               type="button"
@@ -219,11 +221,11 @@ export function ConversationsSidebar() {
           </div>
         )}
 
-        {!isLoading && !isError && conversations.length === 0 && (
+        {!isLoading && !isError && sessions.length === 0 && (
           <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
             <MessageSquare size={28} className="text-muted" />
             <div>
-              <p className="text-sm font-medium text-foreground">No conversations yet</p>
+              <p className="text-sm font-medium text-foreground">No sessions yet</p>
               <p className="mt-1 text-xs text-muted">
                 Paste a HackerRank URL to start your first analysis.
               </p>
@@ -231,39 +233,79 @@ export function ConversationsSidebar() {
           </div>
         )}
 
-        {!isLoading &&
-          !isError &&
-          conversations.map((conversation) => (
-            <ConversationItem
-              key={conversation.session_id}
-              conversation={conversation}
-              isActive={activeSessionId === conversation.session_id}
-              isRenaming={renamingId === conversation.session_id}
-              renameValue={renameValue}
-              onRenameValueChange={setRenameValue}
-              onRenameSubmit={() => handleRename(conversation.session_id)}
-              onRenameStart={() => {
-                setRenamingId(conversation.session_id);
-                setRenameValue(conversation.title);
-                setMenuOpenId(null);
-              }}
-              onRenameCancel={() => setRenamingId(null)}
-              onSelect={() => handleSelectConversation(conversation)}
-              onMenuToggle={() =>
-                setMenuOpenId((prev) =>
-                  prev === conversation.session_id ? null : conversation.session_id,
-                )
-              }
-              menuOpen={menuOpenId === conversation.session_id}
-            />
-          ))}
+        {!isLoading && !isError && sessions.length > 0 && (
+          <>
+            {pinnedSessions.length > 0 && (
+              <div className="mb-2 px-2 pt-1">
+                <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-wide text-muted">
+                  Pinned Sessions
+                </p>
+                {pinnedSessions.map((conversation) => (
+                  <ConversationItem
+                    key={conversation.session_id}
+                    conversation={conversation}
+                    isActive={activeSessionId === conversation.session_id}
+                    isRenaming={renamingId === conversation.session_id}
+                    renameValue={renameValue}
+                    onRenameValueChange={setRenameValue}
+                    onRenameSubmit={() => handleRename(conversation.session_id)}
+                    onRenameStart={() => {
+                      setRenamingId(conversation.session_id);
+                      setRenameValue(conversation.title);
+                      setMenuOpenId(null);
+                    }}
+                    onRenameCancel={() => setRenamingId(null)}
+                    onSelect={() => handleSelectConversation(conversation)}
+                    onMenuToggle={() =>
+                      setMenuOpenId((prev) =>
+                        prev === conversation.session_id ? null : conversation.session_id,
+                      )
+                    }
+                    menuOpen={menuOpenId === conversation.session_id}
+                  />
+                ))}
+              </div>
+            )}
+            <div className="px-2">
+              {pinnedSessions.length > 0 && (
+                <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-wide text-muted">
+                  Recent Sessions
+                </p>
+              )}
+              {recentSessions.map((conversation) => (
+                <ConversationItem
+                  key={conversation.session_id}
+                  conversation={conversation}
+                  isActive={activeSessionId === conversation.session_id}
+                  isRenaming={renamingId === conversation.session_id}
+                  renameValue={renameValue}
+                  onRenameValueChange={setRenameValue}
+                  onRenameSubmit={() => handleRename(conversation.session_id)}
+                  onRenameStart={() => {
+                    setRenamingId(conversation.session_id);
+                    setRenameValue(conversation.title);
+                    setMenuOpenId(null);
+                  }}
+                  onRenameCancel={() => setRenamingId(null)}
+                  onSelect={() => handleSelectConversation(conversation)}
+                  onMenuToggle={() =>
+                    setMenuOpenId((prev) =>
+                      prev === conversation.session_id ? null : conversation.session_id,
+                    )
+                  }
+                  menuOpen={menuOpenId === conversation.session_id}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         {menuOpenId && menuConversation && (
           <div
             ref={menuRef}
             className="absolute left-2 right-2 z-20 rounded-2xl glass-panel p-2 shadow-xl"
             style={{
-              top: `${conversations.findIndex((c) => c.session_id === menuOpenId) * 44 + 8}px`,
+              top: `${sessions.findIndex((c) => c.session_id === menuOpenId) * 44 + 8}px`,
             }}
           >
             <ContextMenu
@@ -286,14 +328,14 @@ export function ConversationsSidebar() {
         <span>
           {isLoading
             ? 'Loading...'
-            : `Showing ${showingCount}${totalLabel ? ` of ${totalLabel}` : ''} conversations`}
+            : `Showing ${showingCount}${totalLabel ? ` of ${totalLabel}` : ''} sessions`}
         </span>
         <button
           type="button"
           onClick={() => refetch()}
           disabled={isFetching}
           className="rounded-lg p-1 transition-colors nav-item-hover hover:text-foreground disabled:opacity-50"
-          aria-label="Refresh conversations"
+          aria-label="Refresh sessions"
         >
           <RefreshCw size={14} className={cn(isFetching && 'animate-spin')} />
         </button>

@@ -18,13 +18,14 @@ import { ROUTES } from '@/constants';
 import { getAxiosErrorMessage } from '@/utils/courseError';
 import { cn } from '@/utils/cn';
 
-type TabId = 'profile' | 'statistics' | 'ai_history' | 'usage' | 'actions';
+type TabId = 'profile' | 'statistics' | 'ai_history' | 'usage' | 'usage_analytics' | 'actions';
 
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'profile', label: 'Profile' },
   { id: 'statistics', label: 'Statistics' },
   { id: 'ai_history', label: 'AI History' },
   { id: 'usage', label: 'Usage' },
+  { id: 'usage_analytics', label: 'Usage Analytics' },
   { id: 'actions', label: 'Actions' },
 ];
 
@@ -164,6 +165,13 @@ export default function AdminUserDetailPage() {
                 ['Disabled at', user.disabled_at || '—'],
                 ['Blocked at', user.blocked_at || '—'],
                 ['Blocked reason', user.blocked_reason || '—'],
+                ['Total requests', user.total_requests ?? '—'],
+                ['Total tokens', user.total_tokens ?? '—'],
+                ['Estimated cost', user.estimated_cost ?? '—'],
+                ['Last AI activity', user.last_ai_activity || '—'],
+                ['Most used feature', user.most_used_feature || '—'],
+                ['Most used model', user.most_used_model || '—'],
+                ['Current plan', user.current_plan || '—'],
               ].map(([label, value]) => (
                 <div key={label}>
                   <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
@@ -196,6 +204,18 @@ export default function AdminUserDetailPage() {
         )}
 
         {tab === 'usage' && <JsonBlock value={data.usage} />}
+
+        {tab === 'usage_analytics' && (
+          <div className="space-y-4">
+            <Link
+              href={ROUTES.ADMIN_AI_USAGE_USER(userId)}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              Open full AI usage detail →
+            </Link>
+            <JsonBlock value={data.usage_analytics ?? null} />
+          </div>
+        )}
 
         {tab === 'actions' && (
           <div className="space-y-4">

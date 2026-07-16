@@ -133,10 +133,10 @@ export function PatternHistorySidebar() {
   };
 
   return (
-    <aside className="hidden w-[320px] min-w-0 shrink-0 flex-col rounded-[24px] glass-panel shadow-lg lg:flex">
+    <aside className="hidden w-full min-w-0 shrink-0 flex-col rounded-[24px] glass-panel shadow-lg lg:flex">
       <div className="border-b border-border p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-heading text-base font-semibold text-foreground">Pattern history</h2>
+          <h2 className="font-heading text-base font-semibold text-foreground">Recent lessons</h2>
           <div className="flex items-center gap-1">
             <Link
               href={ROUTES.DSA_PATTERN_DASHBOARD}

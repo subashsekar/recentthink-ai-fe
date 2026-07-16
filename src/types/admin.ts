@@ -7,6 +7,25 @@ export type Dashboard = {
   students: number;
   professionals: number;
   job_seekers: number;
+  platform_total_tokens?: number;
+  platform_total_cost?: number;
+  platform_total_requests?: number;
+  active_users_today?: number;
+  most_active_user?: MostActiveUser | null;
+  most_used_ai_feature?: string | null;
+  most_used_ai_model?: string | null;
+  most_used_provider?: string | null;
+  average_response_time?: number | null;
+  average_execution_time?: number | null;
+};
+
+export type MostActiveUser = {
+  user_id: string;
+  total_tokens?: number;
+  total_requests?: number;
+  estimated_cost?: number;
+  user_name?: string | null;
+  email?: string | null;
 };
 
 export type AdminUser = {
@@ -26,6 +45,15 @@ export type AdminUser = {
   current_status?: string | null;
   primary_skill?: string | null;
   profile_picture_url?: string | null;
+  total_requests?: number | null;
+  prompt_tokens?: number | null;
+  completion_tokens?: number | null;
+  total_tokens?: number | null;
+  estimated_cost?: number | null;
+  last_ai_activity?: string | null;
+  most_used_feature?: string | null;
+  most_used_model?: string | null;
+  current_plan?: string | null;
 };
 
 export type AdminUsersQuery = {
@@ -62,19 +90,242 @@ export type AdminUserDetail = {
     usage: unknown[];
   } | null;
   usage: Record<string, unknown> | null;
+  usage_analytics?: UserUsageDetail | Record<string, unknown> | null;
 };
 
 export type AdminUserActionBody = {
   reason?: string;
 };
 
-export type AdminAnalytics = {
+export type PeriodUsage = {
+  requests?: number;
+  tokens?: number;
+  cost?: number;
+  sessions?: number;
+  [key: string]: number | undefined;
+};
+
+export type AnalyticsDashboard = {
+  total_requests?: number;
+  total_ai_sessions?: number;
+  total_prompt_tokens?: number;
+  total_completion_tokens?: number;
+  total_tokens_used?: number;
+  total_estimated_cost?: number;
+  average_tokens_per_request?: number;
+  average_cost_per_request?: number;
+  todays_usage?: PeriodUsage | null;
+  weekly_usage?: PeriodUsage | null;
+  monthly_usage?: PeriodUsage | null;
+  platform_total_tokens?: number;
+  platform_total_cost?: number;
+  platform_total_requests?: number;
+  active_users_today?: number;
+  most_active_user?: MostActiveUser | null;
+  most_used_ai_feature?: string | null;
+  most_used_ai_model?: string | null;
+  most_used_provider?: string | null;
+  average_response_time?: number | null;
+  average_execution_time?: number | null;
+  [key: string]: unknown;
+};
+
+export type TopListItem = {
+  label?: string;
+  name?: string;
+  user_id?: string;
+  user_name?: string;
+  email?: string;
+  feature?: string;
+  model?: string;
+  provider?: string;
+  requests?: number;
+  tokens?: number;
+  total_tokens?: number;
+  cost?: number;
+  estimated_cost?: number;
+  [key: string]: unknown;
+};
+
+export type TokenAnalytics = {
+  total_prompt_tokens?: number;
+  total_completion_tokens?: number;
+  total_tokens?: number;
+  daily_tokens?: number;
+  weekly_tokens?: number;
+  monthly_tokens?: number;
+  top_users?: TopListItem[];
+  top_features?: TopListItem[];
+  top_models?: TopListItem[];
+  top_providers?: TopListItem[];
+};
+
+export type FeatureAnalyticsItem = {
+  feature: string;
+  requests?: number;
+  tokens?: number;
+  cost?: number;
+  average_time_ms?: number;
+  average_tokens?: number;
+  average_cost?: number;
+};
+
+export type FeatureAnalytics = {
+  items: FeatureAnalyticsItem[];
+};
+
+export type ModelAnalyticsItem = {
+  model: string;
+  provider?: string;
+  requests?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+  estimated_cost?: number;
+  average_latency_ms?: number;
+  success_rate?: number;
+  failure_rate?: number;
+};
+
+export type ModelAnalytics = {
+  items: ModelAnalyticsItem[];
+};
+
+export type ProviderAnalyticsItem = {
+  provider: string;
+  requests?: number;
+  tokens?: number;
+  cost?: number;
+};
+
+export type ProviderAnalytics = {
+  items: ProviderAnalyticsItem[];
+};
+
+export type AnalyticsUsersQuery = {
+  page?: number;
+  page_size?: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
+  search?: string;
+  role?: string;
+  current_status?: string;
+};
+
+export type AnalyticsUserRow = {
+  user_id: string;
+  user_name?: string | null;
+  email?: string | null;
+  role?: string | null;
+  current_status?: string | null;
+  total_requests?: number | null;
+  prompt_tokens?: number | null;
+  completion_tokens?: number | null;
+  total_tokens?: number | null;
+  estimated_cost?: number | null;
+  average_tokens_per_request?: number | null;
+  last_active?: string | null;
+  current_plan?: string | null;
+};
+
+export type AnalyticsUsersResponse = {
+  items: AnalyticsUserRow[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages?: number;
+};
+
+export type FeatureBreakdownItem = {
+  feature: string;
+  requests?: number;
+  tokens?: number;
+  cost?: number;
+  [key: string]: unknown;
+};
+
+export type ModelUsageItem = {
+  model: string;
+  provider?: string;
+  requests?: number;
+  tokens?: number;
+  cost?: number;
+  [key: string]: unknown;
+};
+
+export type ProviderUsageItem = {
+  provider: string;
+  requests?: number;
+  tokens?: number;
+  cost?: number;
+  [key: string]: unknown;
+};
+
+export type UserUsageDetail = {
+  user?: AdminUser | Record<string, unknown> | null;
+  profile?: Record<string, unknown> | null;
+  total_requests?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+  estimated_cost?: number;
+  feature_breakdown?: FeatureBreakdownItem[];
+  model_usage?: ModelUsageItem[];
+  provider_usage?: ProviderUsageItem[];
+  session_history?: unknown[];
+  recent_conversations?: unknown[];
+  average_execution_time_ms?: number | null;
+  last_activity?: string | null;
+  [key: string]: unknown;
+};
+
+export type ChartSeriesItem = {
+  label: string;
+  value: number;
+};
+
+export type AnalyticsCharts = {
+  daily_token_usage?: ChartSeriesItem[];
+  weekly_token_usage?: ChartSeriesItem[];
+  monthly_token_usage?: ChartSeriesItem[];
+  requests_per_day?: ChartSeriesItem[];
+  top_features?: ChartSeriesItem[];
+  top_models?: ChartSeriesItem[];
+  top_providers?: ChartSeriesItem[];
+  top_users?: ChartSeriesItem[];
+  cost_per_day?: ChartSeriesItem[];
+  tokens_per_feature?: ChartSeriesItem[];
+};
+
+export type CostAnalytics = {
+  total_cost?: number;
+  average_cost?: number;
+  daily_cost?: number;
+  weekly_cost?: number;
+  monthly_cost?: number;
+  cost_by_feature?: ChartSeriesItem[] | TopListItem[];
+  cost_by_model?: ChartSeriesItem[] | TopListItem[];
+  cost_by_provider?: ChartSeriesItem[] | TopListItem[];
+  cost_per_day?: ChartSeriesItem[];
+};
+
+export type AnalyticsExportReport =
+  | 'user_usage'
+  | 'feature_usage'
+  | 'model_usage'
+  | 'provider_usage'
+  | 'token_usage'
+  | 'cost_analysis';
+
+export type AnalyticsExportFormat = 'csv' | 'excel' | 'pdf';
+
+/** @deprecated Prefer AnalyticsDashboard */
+export type AdminAnalytics = AnalyticsDashboard & {
   ai_sessions?: number;
   conversations?: number;
   avg_latency_ms?: number;
   avg_tokens?: number;
   avg_cost?: number;
-  [key: string]: unknown;
 };
 
 export type AdminUsage = {

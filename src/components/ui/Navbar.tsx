@@ -13,6 +13,7 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Button } from './Button';
 import { ROUTES } from '@/constants';
 import { cn } from '@/utils/cn';
+import { useCommandPaletteStore } from '@/components/search/commandPaletteStore';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -23,6 +24,7 @@ interface NavbarProps {
 
 export function Navbar({ onMenuClick, className, endActions, glass = false }: NavbarProps) {
   const { isAuthenticated } = useAuthStore();
+  const paletteOpen = useCommandPaletteStore((s) => s.open);
 
   return (
     <motion.header
@@ -31,6 +33,7 @@ export function Navbar({ onMenuClick, className, endActions, glass = false }: Na
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className={cn(
         'sticky top-0 z-30 flex h-[118px] shrink-0 items-center overflow-visible rounded-[24px] px-6 shadow-lg',
+        paletteOpen && 'z-[70]',
         glass ? 'glass-navbar' : 'border border-border bg-surface',
         className,
       )}

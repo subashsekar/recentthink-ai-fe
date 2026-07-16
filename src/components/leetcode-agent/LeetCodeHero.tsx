@@ -1,6 +1,7 @@
 'use client';
 
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AlertCircle, Link2, RefreshCw, Send } from 'lucide-react';
 import { HeroOrb } from '@/components/dashboard/hero-orb';
 import toast from 'react-hot-toast';
@@ -14,12 +15,14 @@ import { ModelSelector } from './ModelSelector';
 import { useInvalidateLeetCodeQueries } from '@/hooks/leetcode/useLeetCodeMutations';
 import { useEffectiveModelId } from '@/hooks/leetcode/useEffectiveModelId';
 import { useEffectiveModeId } from '@/hooks/leetcode/useEffectiveModeId';
+import { hasReportContent } from '@/utils/leetcodeSession';
 
 export interface LeetCodeHeroHandle {
   analyzeUrl: (url: string) => Promise<void>;
 }
 
 export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero(_props, ref) {
+  const searchParams = useSearchParams();
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +33,18 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
   const applyStreamEvent = useChatStore((s) => s.applyStreamEvent);
   const setAnalyzing = useChatStore((s) => s.setAnalyzing);
   const setStreaming = useChatStore((s) => s.setStreaming);
+  const resetConversationForNewAnalysis = useChatStore((s) => s.resetConversationForNewAnalysis);
+  const sessionUrl = useChatStore((s) => s.session?.url);
+  const hasSession = useChatStore((s) =>
+    hasReportContent({
+      activeSessionId: s.activeSessionId,
+      session: s.session,
+      problemStatement: s.problemStatement,
+      problemStatementMarkdown: s.problemStatementMarkdown,
+      problemStatementHtml: s.problemStatementHtml,
+      roleContent: s.roleContent,
+    }),
+  );
   const effectiveModelId = useEffectiveModelId();
   const effectiveModeId = useEffectiveModeId();
   const { invalidateAll } = useInvalidateLeetCodeQueries();
@@ -75,6 +90,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
       setIsLoading(true);
       setAnalyzing(true);
       setStreaming(false);
+      resetConversationForNewAnalysis();
       abortRef.current?.abort();
       abortRef.current = new AbortController();
 
@@ -118,7 +134,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
         );
 
         invalidateAll();
-        toast.success('Analysis ready. Review the report pages.');
+        toast.success('Analysis ready. Review the report and ask follow-ups below.');
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') return;
 
@@ -153,6 +169,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
       applyStreamEvent,
       setAnalyzing,
       setStreaming,
+      resetConversationForNewAnalysis,
       invalidateAll,
     ],
   );
@@ -179,6 +196,29 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
     window.addEventListener(APP_EVENTS.LEETCODE_NEW_CHAT, onNewChat);
     return () => window.removeEventListener(APP_EVENTS.LEETCODE_NEW_CHAT, onNewChat);
   }, []);
+
+  // Prefill from command palette: /leetcode-agent?problemUrl=...&q=Two+Sum
+  useEffect(() => {
+    const problemUrl = searchParams.get('problemUrl');
+    if (problemUrl) {
+      setUrl(problemUrl);
+      inputRef.current?.focus();
+    }
+  }, [searchParams]);
+
+  // Keep URL input in sync when opening an existing session
+  useEffect(() => {
+    if (sessionUrl) setUrl(sessionUrl);
+  }, [sessionUrl]);
+
+  const handleAnalyzeAgain = () => {
+    const target = (sessionUrl || url).trim();
+    if (!target) {
+      toast.error('No problem URL available to re-analyze.');
+      return;
+    }
+    void handleAnalyze(target);
+  };
 
   return (
     <section className="px-5 py-6 lg:px-8 lg:py-8">
@@ -238,6 +278,17 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
                   <Send size={16} />
                   {isLoading ? 'Analyzing...' : 'Analyze'}
                 </button>
+                {hasSession ? (
+                  <button
+                    type="button"
+                    onClick={handleAnalyzeAgain}
+                    disabled={isLoading}
+                    className="flex items-center gap-2 rounded-xl border border-border bg-secondary-bg px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover-surface disabled:opacity-60"
+                  >
+                    <RefreshCw size={16} className={isLoading ? 'animate-spin' : undefined} />
+                    Analyze Again
+                  </button>
+                ) : null}
               </div>
             </div>
           </div>

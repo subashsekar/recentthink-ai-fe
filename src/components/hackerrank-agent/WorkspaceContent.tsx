@@ -6,6 +6,7 @@ import { HackerRankHero, type HackerRankHeroHandle } from './HackerRankHero';
 import { ExampleCards } from './ExampleCards';
 import { FollowUpInput } from './FollowUpInput';
 import { SessionReport } from './SessionReport';
+import { WorkspaceOverview } from './WorkspaceOverview';
 import { useHackerRankChatStore } from '@/store/hackerrankChatStore';
 import { hasReportContent } from '@/utils/hackerrankSession';
 
@@ -40,7 +41,11 @@ export function WorkspaceContent() {
                 void heroRef.current?.analyzeUrl(url);
               }}
             />
-            <FollowUpInput />
+            <WorkspaceOverview
+              onQuickAction={(url) => {
+                void heroRef.current?.analyzeUrl(url);
+              }}
+            />
           </>
         )}
       </div>

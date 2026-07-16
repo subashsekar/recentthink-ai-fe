@@ -146,10 +146,10 @@ export function CourseHistorySidebar() {
   const showingCount = items.length;
 
   return (
-    <aside className="hidden w-[320px] min-w-0 shrink-0 flex-col rounded-[24px] glass-panel shadow-lg lg:flex">
+    <aside className="hidden w-full min-w-0 shrink-0 flex-col rounded-[24px] glass-panel shadow-lg lg:flex">
       <div className="border-b border-border p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-heading text-base font-semibold text-foreground">Chat history</h2>
+          <h2 className="font-heading text-base font-semibold text-foreground">Recent courses</h2>
         </div>
 
         <div className="relative">
@@ -161,7 +161,7 @@ export function CourseHistorySidebar() {
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search chats..."
+            placeholder="Search courses..."
             className="glass-input h-9 w-full rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
         </div>
@@ -205,7 +205,7 @@ export function CourseHistorySidebar() {
           <div className="flex flex-col items-center gap-3 px-4 py-12 text-center">
             <BookOpen size={28} className="text-muted" />
             <div>
-              <p className="text-sm font-medium text-foreground">No chats yet</p>
+              <p className="text-sm font-medium text-foreground">No courses yet</p>
               <p className="mt-1 text-xs text-muted">Generate a learning path to get started.</p>
             </div>
             <button

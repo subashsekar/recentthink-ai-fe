@@ -14,9 +14,10 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Alert } from '@/components/ui/Alert';
 import { adminApi } from '@/services/api/admin';
 import { ROUTES } from '@/constants';
+import { config } from '@/config';
 import type { AdminUser } from '@/types/admin';
 import { getAxiosErrorMessage } from '@/utils/courseError';
-import { config } from '@/config';
+import { formatCost, formatDateTime, formatInt, formatNullable } from '@/utils/adminFormat';
 
 function fullName(user: AdminUser) {
   return `${user.first_name} ${user.last_name}`.trim() || user.email;
@@ -135,7 +136,13 @@ export default function AdminUsersPage() {
                   <th className="px-4 py-3 font-semibold">Active</th>
                   <th className="px-4 py-3 font-semibold">Blocked</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold">Skill</th>
+                  <th className="px-4 py-3 font-semibold">Requests</th>
+                  <th className="px-4 py-3 font-semibold">Tokens</th>
+                  <th className="px-4 py-3 font-semibold">Cost</th>
+                  <th className="px-4 py-3 font-semibold">Last AI</th>
+                  <th className="px-4 py-3 font-semibold">Top feature</th>
+                  <th className="px-4 py-3 font-semibold">Top model</th>
+                  <th className="px-4 py-3 font-semibold">Plan</th>
                   <th className="px-4 py-3 font-semibold">Created</th>
                   <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
@@ -143,7 +150,7 @@ export default function AdminUsersPage() {
               <tbody>
                 {(data?.items ?? []).length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-10 text-center text-muted">
+                    <td colSpan={16} className="px-4 py-10 text-center text-muted">
                       No users found
                     </td>
                   </tr>
@@ -177,12 +184,43 @@ export default function AdminUsersPage() {
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-secondary-text">{user.primary_skill || '—'}</td>
+                      <td className="px-4 py-3 text-secondary-text">
+                        {formatInt(user.total_requests)}
+                      </td>
+                      <td className="px-4 py-3 text-secondary-text">
+                        <div className="space-y-0.5">
+                          <p>{formatInt(user.total_tokens)}</p>
+                          <p className="text-xs text-muted">
+                            P {formatInt(user.prompt_tokens)} / C{' '}
+                            {formatInt(user.completion_tokens)}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-secondary-text">
+                        {formatCost(user.estimated_cost)}
+                      </td>
+                      <td className="px-4 py-3 text-secondary-text">
+                        {formatDateTime(user.last_ai_activity)}
+                      </td>
+                      <td className="px-4 py-3 text-secondary-text">
+                        {formatNullable(user.most_used_feature)}
+                      </td>
+                      <td className="px-4 py-3 text-secondary-text">
+                        {formatNullable(user.most_used_model)}
+                      </td>
+                      <td className="px-4 py-3 text-secondary-text">
+                        {formatNullable(user.current_plan)}
+                      </td>
                       <td className="px-4 py-3 text-secondary-text">
                         {formatDate(user.created_at)}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1">
+                          <Link href={ROUTES.ADMIN_AI_USAGE_USER(user.id)}>
+                            <Button type="button" size="sm" variant="ghost" className="rounded-lg">
+                              AI usage
+                            </Button>
+                          </Link>
                           {user.is_blocked ? (
                             <Button
                               type="button"
