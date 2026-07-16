@@ -4,6 +4,20 @@ const gatewayBaseUrl =
   process.env.NEXT_PUBLIC_API_URL ||
   'http://localhost:8000';
 
+/**
+ * HackerRank product routes (`/hackerrank/*`) are proxied by the gateway.
+ * Always prefer the gateway base (same as LeetCode).
+ *
+ * Direct AI-service URL is opt-in only — when Docker publishes the AI port and
+ * gateway proxy is unavailable. Setting NEXT_PUBLIC_HACKERRANK_SERVICE_URL alone
+ * used to hijack all HR calls to a host port that often times out.
+ */
+const hackerrankBaseUrl =
+  process.env.NEXT_PUBLIC_HACKERRANK_FORCE_DIRECT === '1' &&
+  process.env.NEXT_PUBLIC_HACKERRANK_SERVICE_URL
+    ? process.env.NEXT_PUBLIC_HACKERRANK_SERVICE_URL
+    : gatewayBaseUrl;
+
 export const config = {
   api: {
     // Single gateway base URL (frontend -> gateway -> services).
@@ -15,8 +29,7 @@ export const config = {
     timeout: 30000,
     // Debug logs (URL + status only). Never logs headers/tokens.
     debug: process.env.NEXT_PUBLIC_API_DEBUG === '1',
-    // HackerRank mentor routes. Use direct AI service in local dev when gateway proxy is pending.
-    hackerrankBaseUrl: process.env.NEXT_PUBLIC_HACKERRANK_SERVICE_URL || gatewayBaseUrl,
+    hackerrankBaseUrl,
   },
   auth: {
     tokenKey: 'access_token',

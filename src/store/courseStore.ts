@@ -33,6 +33,9 @@ function toChatMessages(messages: CourseHistoryMessage[] | undefined): CourseCha
     agent_name: m.agent_name,
     content: m.content || m.message || '',
     created_at: m.created_at,
+    intent: m.intent,
+    rejected: m.rejected,
+    context_match: m.context_match,
   }));
 }
 
@@ -55,6 +58,7 @@ interface CourseStore {
   appendChat: (sessionId: string, message: CourseChatMessage) => void;
   setChat: (sessionId: string, messages: CourseChatMessage[]) => void;
   appendMessageToDetail: (message: CourseChatMessage) => void;
+  updateMessageInDetail: (id: string, patch: Partial<CourseChatMessage>) => void;
 }
 
 export const useCourseStore = create<CourseStore>((set, get) => ({
@@ -102,6 +106,11 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
       selectedCourseId: detail.course_id || state.selectedCourseId,
       detail,
       showNewForm: false,
+      form: {
+        ...state.form,
+        model_id: detail.model_id ?? state.form.model_id,
+        mode_id: detail.mode_id ?? state.form.mode_id,
+      },
       chatBySession: sessionId
         ? { ...state.chatBySession, [sessionId]: messages }
         : state.chatBySession,
@@ -140,6 +149,9 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
         content: message.content,
         message: message.content,
         created_at: message.created_at,
+        intent: message.intent,
+        rejected: message.rejected,
+        context_match: message.context_match,
       },
     ];
     set({
@@ -148,5 +160,40 @@ export const useCourseStore = create<CourseStore>((set, get) => ({
     if (detail.session_id) {
       get().appendChat(detail.session_id, message);
     }
+  },
+
+  updateMessageInDetail: (id, patch) => {
+    const detail = get().detail;
+    const sessionId = detail?.session_id;
+    if (!sessionId) return;
+
+    set((state) => {
+      const existing = state.chatBySession[sessionId] ?? [];
+      const chatBySession = {
+        ...state.chatBySession,
+        [sessionId]: existing.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+      };
+
+      if (!detail) return { chatBySession };
+
+      return {
+        chatBySession,
+        detail: {
+          ...detail,
+          messages: (detail.messages ?? []).map((m) =>
+            m.id === id
+              ? {
+                  ...m,
+                  content: patch.content ?? m.content,
+                  message: patch.content ?? m.message,
+                  intent: patch.intent ?? m.intent,
+                  rejected: patch.rejected ?? m.rejected,
+                  context_match: patch.context_match ?? m.context_match,
+                }
+              : m,
+          ),
+        },
+      };
+    });
   },
 }));

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Bookmark, Loader2, Trash2 } from 'lucide-react';
@@ -16,6 +16,7 @@ import { cn } from '@/utils/cn';
 import { useCourseStore } from '@/store/courseStore';
 import type { CourseHistoryDetail } from '@/types/course';
 import { CourseExportMenu } from './CourseExportMenu';
+import { CourseModelSelector } from './CourseModelSelector';
 import { OverviewTab } from './tabs/OverviewTab';
 import { RoadmapTab } from './tabs/RoadmapTab';
 import { LessonsTab } from './tabs/LessonsTab';
@@ -48,6 +49,7 @@ export function CourseWorkspace({ course }: CourseWorkspaceProps) {
   const router = useRouter();
   const { data: dashboard } = useCourseDashboard();
   const [tab, setTab] = useState<TabId>('overview');
+  const followUpRef = useRef<HTMLDivElement>(null);
 
   const bookmark = useCourseBookmarkMutation();
   const deleteCourse = useDeleteCourseMutation();
@@ -70,6 +72,13 @@ export function CourseWorkspace({ course }: CourseWorkspaceProps) {
       return true;
     });
   }, [course]);
+
+  const openFollowUp = () => {
+    setTab('chat');
+    window.requestAnimationFrame(() => {
+      followUpRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
 
   const onBookmark = async () => {
     try {
@@ -121,7 +130,8 @@ export function CourseWorkspace({ course }: CourseWorkspaceProps) {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <CourseModelSelector compact menuPlacement="below" />
             <CourseExportMenu courseId={exportCourseId} />
             <Button
               size="sm"
@@ -151,7 +161,10 @@ export function CourseWorkspace({ course }: CourseWorkspaceProps) {
             <button
               key={item.id}
               type="button"
-              onClick={() => setTab(item.id)}
+              onClick={() => {
+                if (item.id === 'chat') openFollowUp();
+                else setTab(item.id);
+              }}
               className={cn(
                 'shrink-0 rounded-xl px-3 py-2 text-sm font-medium transition-colors',
                 tab === item.id
@@ -173,7 +186,15 @@ export function CourseWorkspace({ course }: CourseWorkspaceProps) {
           {tab === 'projects' && <ProjectsTab course={course} />}
           {tab === 'assessments' && <AssessmentsTab course={course} />}
           {tab === 'resources' && <ResourcesTab course={course} />}
-          {tab === 'chat' && <ChatTab course={course} />}
+          {tab === 'chat' && (
+            <p className="text-sm text-muted">
+              Follow-up chat stays scoped to this course session — use the composer below.
+            </p>
+          )}
+        </div>
+
+        <div ref={followUpRef} id="course-follow-up">
+          <ChatTab key={course.session_id ?? 'no-session'} course={course} variant="panel" />
         </div>
       </div>
 
@@ -234,6 +255,10 @@ export function CourseWorkspace({ course }: CourseWorkspaceProps) {
             No progress yet
           </div>
         )}
+
+        <Button size="sm" variant="outline" className="w-full rounded-xl" onClick={openFollowUp}>
+          Open follow-up chat
+        </Button>
       </aside>
     </div>
   );

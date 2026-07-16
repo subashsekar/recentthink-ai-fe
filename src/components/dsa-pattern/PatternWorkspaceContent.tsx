@@ -6,6 +6,7 @@ import { useDsaPatternDetail } from '@/hooks/dsa-pattern/useDsaPatternQueries';
 import { PatternGenerateForm } from './PatternGenerateForm';
 import { PatternWorkspace } from './PatternWorkspace';
 import { PatternExampleCards } from './PatternExampleCards';
+import { PatternModelSelector } from './PatternModelSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 export function PatternWorkspaceContent() {
@@ -55,14 +56,17 @@ export function PatternWorkspaceContent() {
           </div>
         ) : showForm ? (
           <div className="space-y-6 p-4 sm:p-6">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-primary">
-                RecentThink
-              </p>
-              <h1 className="mt-1 font-heading text-2xl font-semibold text-foreground sm:text-3xl">
-                DSA Pattern Coach
-              </h1>
-              <p className="mt-2 text-sm text-muted">Learn how to identify DSA patterns</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                  RecentThink
+                </p>
+                <h1 className="mt-1 font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+                  DSA Pattern Coach
+                </h1>
+                <p className="mt-2 text-sm text-muted">Learn how to identify DSA patterns</p>
+              </div>
+              <PatternModelSelector compact menuPlacement="below" className="shrink-0 self-start" />
             </div>
             <div>
               <h2 className="font-heading text-sm font-semibold text-foreground">

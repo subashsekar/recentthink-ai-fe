@@ -13,6 +13,8 @@ import { coursesApi } from '@/services/api/courses';
 import { ROUTES } from '@/constants';
 import { CourseExampleCards } from './CourseExampleCards';
 import { CourseGeneratingState } from './CourseGeneratingState';
+import { CourseModelSelector } from './CourseModelSelector';
+import { useResolvedModelId } from '@/hooks/useAiModels';
 import { cn } from '@/utils/cn';
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced'];
@@ -94,6 +96,7 @@ export function CourseGenerateForm({ embedded = false }: { embedded?: boolean })
   const setGenerating = useCourseStore((s) => s.setGenerating);
   const generate = useGenerateCourseMutation();
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const effectiveModelId = useResolvedModelId(form.model_id);
 
   const validate = () => {
     const next: Record<string, string> = {};
@@ -121,6 +124,7 @@ export function CourseGenerateForm({ embedded = false }: { embedded?: boolean })
         topics_include: form.topics_include?.filter(Boolean) ?? [],
         topics_exclude: form.topics_exclude?.filter(Boolean) ?? [],
         output_format: form.output_format ?? 'full',
+        model_id: effectiveModelId,
       });
 
       if (course.status === 'FAILED') {
@@ -334,14 +338,12 @@ export function CourseGenerateForm({ embedded = false }: { embedded?: boolean })
           placeholder="e.g. DevOps"
         />
 
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full rounded-2xl"
-          isLoading={generate.isPending}
-        >
-          Generate course
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <CourseModelSelector compact disabled={generate.isPending} menuPlacement="above" />
+          <Button type="submit" size="lg" className="rounded-2xl" isLoading={generate.isPending}>
+            Generate course
+          </Button>
+        </div>
       </form>
     </div>
   );

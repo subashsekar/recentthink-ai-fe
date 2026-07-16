@@ -1,11 +1,10 @@
 import { config } from '@/config';
 import { storage } from '@/utils/storage';
-import { createApiRequestError } from '@/utils/apiError';
+import { createApiRequestError, createNetworkFetchError, isAbortError } from '@/utils/apiError';
 import { normalizeAnalyzeResponse } from '@/utils/leetcodeSession';
 import type { LeetCodeAnalyzeRequest, LeetCodeStreamEvent } from '@/types/leetcode';
 import { processStreamResponse } from './streaming';
 
-const gatewayBase = config.api.baseUrl.replace(/\/+$/, '');
 const shouldDebug = () => config.api.debug && process.env.NODE_ENV !== 'production';
 
 export interface AnalyzeHandlers {
@@ -18,6 +17,8 @@ export async function analyzeAdaptive(
   handlers: AnalyzeHandlers,
   signal?: AbortSignal,
 ) {
+  const gatewayBase = config.api.baseUrl.replace(/\/+$/, '');
+  const endpoint = `${gatewayBase}/leetcode/analyze`;
   const accessToken = storage.get<string>(config.auth.tokenKey);
   const headers: HeadersInit = {
     Accept: 'text/event-stream, application/json',
@@ -27,15 +28,21 @@ export async function analyzeAdaptive(
     (headers as Record<string, string>).Authorization = `Bearer ${accessToken}`;
   }
 
-  const res = await fetch(`${gatewayBase}/leetcode/analyze`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(data),
-    signal,
-  });
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data),
+      signal,
+    });
+  } catch (err) {
+    if (isAbortError(err)) throw err;
+    throw createNetworkFetchError(gatewayBase, err);
+  }
 
   if (shouldDebug()) {
-    console.debug('[analyze]', res.status, `${gatewayBase}/leetcode/analyze`);
+    console.debug('[analyze]', res.status, endpoint);
   }
 
   if (!res.ok) {

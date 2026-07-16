@@ -1,7 +1,7 @@
 import { config } from '@/config';
 import { getHackerRankApiBase } from '@/utils/hackerrankApiBase';
 import { storage } from '@/utils/storage';
-import { createApiRequestError } from '@/utils/apiError';
+import { createApiRequestError, createNetworkFetchError, isAbortError } from '@/utils/apiError';
 import { normalizeAnalyzeResponse } from '@/utils/hackerrankSession';
 import type { HackerRankAnalyzeRequest, HackerRankStreamEvent } from '@/types/hackerrank';
 import { processStreamResponse } from './streaming';
@@ -28,16 +28,30 @@ export async function hackerrankAnalyzeAdaptive(
   }
 
   const apiBase = getHackerRankApiBase();
+  // Canonical stream path: POST /hackerrank/analyze?stream=true
+  const endpoint = `${apiBase}/hackerrank/analyze?stream=true`;
 
-  const res = await fetch(`${apiBase}/hackerrank/analyze`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(data),
-    signal,
-  });
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        problem_url: data.problem_url ?? null,
+        problem_statement: data.problem_statement ?? null,
+        title: data.title ?? null,
+        model_id: data.model_id ?? null,
+        mode_id: data.mode_id ?? null,
+      }),
+      signal,
+    });
+  } catch (err) {
+    if (isAbortError(err)) throw err;
+    throw createNetworkFetchError(apiBase, err);
+  }
 
   if (shouldDebug()) {
-    console.debug('[hackerrank][analyze]', res.status, `${apiBase}/hackerrank/analyze`);
+    console.debug('[hackerrank][analyze]', res.status, endpoint);
   }
 
   if (!res.ok) {

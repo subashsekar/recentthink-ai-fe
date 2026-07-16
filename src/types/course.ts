@@ -210,6 +210,8 @@ export interface CourseFollowUpResponse {
   teacher?: string;
   total_tokens?: number;
   execution_time_ms?: number;
+  context_match?: boolean;
+  rejected?: boolean;
   [key: string]: unknown;
 }
 
@@ -237,6 +239,9 @@ export interface CourseHistoryMessage {
   content: string;
   message?: string;
   created_at: string;
+  intent?: string;
+  rejected?: boolean;
+  context_match?: boolean;
 }
 
 export interface CourseHistoryListResponse {
@@ -268,6 +273,10 @@ export interface CourseChatMessage {
   agent_name?: string | null;
   content: string;
   created_at: string;
+  intent?: string;
+  rejected?: boolean;
+  context_match?: boolean;
+  isStreaming?: boolean;
 }
 
 export interface CourseProgressUpdateRequest {

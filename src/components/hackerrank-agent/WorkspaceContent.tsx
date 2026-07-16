@@ -12,6 +12,7 @@ import { hasReportContent } from '@/utils/hackerrankSession';
 
 export function WorkspaceContent() {
   const heroRef = useRef<HackerRankHeroHandle>(null);
+  const activeSessionId = useHackerRankChatStore((s) => s.activeSessionId);
 
   const hasSession = useHackerRankChatStore((s) =>
     hasReportContent({
@@ -31,7 +32,7 @@ export function WorkspaceContent() {
         {hasSession ? (
           <>
             <SessionReport />
-            <FollowUpInput />
+            <FollowUpInput key={activeSessionId ?? 'no-session'} />
           </>
         ) : (
           <>
@@ -46,6 +47,7 @@ export function WorkspaceContent() {
                 void heroRef.current?.analyzeUrl(url);
               }}
             />
+            <FollowUpInput key="empty-session" />
           </>
         )}
       </div>

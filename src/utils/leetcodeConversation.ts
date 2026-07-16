@@ -8,4 +8,7 @@ export interface MentorConversationMessage {
   /** @deprecated Analysis lives in SessionReport, not in the chat panel. */
   isAnalysis?: boolean;
   isStreaming?: boolean;
+  intent?: string;
+  rejected?: boolean;
+  contextMatch?: boolean;
 }

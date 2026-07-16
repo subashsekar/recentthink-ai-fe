@@ -2,19 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { leetcodeApi } from '@/services/api/leetcode';
-import { getAiModels } from '@/services/api/models';
-import { useAuthStore } from '@/store/authStore';
-import { sortModels } from '@/utils/leetcodeModels';
 import { leetcodeKeys } from './queryKeys';
-import type { ModelsResponse } from '@/types/ai-models';
 
-function normalizeModelsResponse(data: ModelsResponse): ModelsResponse {
-  const models = sortModels(data.models.filter((m) => m.enabled));
-  return {
-    default_model: data.default_model,
-    models,
-  };
-}
+export { useAiModels } from '@/hooks/useAiModels';
 
 export function useLeetCodeHistory(params?: { limit?: number; offset?: number; q?: string }) {
   return useQuery({
@@ -49,17 +39,5 @@ export function useLeetCodeExamples() {
   return useQuery({
     queryKey: leetcodeKeys.examples(),
     queryFn: () => leetcodeApi.getExamples(),
-  });
-}
-
-export function useAiModels() {
-  const accessToken = useAuthStore((s) => s.accessToken);
-
-  return useQuery({
-    queryKey: leetcodeKeys.models(),
-    queryFn: () => getAiModels(accessToken!),
-    enabled: Boolean(accessToken),
-    staleTime: 5 * 60 * 1000,
-    select: normalizeModelsResponse,
   });
 }

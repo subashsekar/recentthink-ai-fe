@@ -1,23 +1,23 @@
 'use client';
 
 import { ModelSelectDropdown } from '@/components/model-selector';
-import { useDsaPatternStore } from '@/store/dsaPatternStore';
+import { useCourseStore } from '@/store/courseStore';
 
-interface PatternModelSelectorProps {
+interface CourseModelSelectorProps {
   className?: string;
   compact?: boolean;
   disabled?: boolean;
   menuPlacement?: 'above' | 'below';
 }
 
-export function PatternModelSelector({
+export function CourseModelSelector({
   className,
   compact,
   disabled,
   menuPlacement,
-}: PatternModelSelectorProps) {
-  const selectedModelId = useDsaPatternStore((s) => s.form.model_id ?? null);
-  const setForm = useDsaPatternStore((s) => s.setForm);
+}: CourseModelSelectorProps) {
+  const selectedModelId = useCourseStore((s) => s.form.model_id ?? null);
+  const setForm = useCourseStore((s) => s.setForm);
 
   return (
     <ModelSelectDropdown

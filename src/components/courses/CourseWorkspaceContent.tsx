@@ -6,6 +6,7 @@ import { useCourseDetail } from '@/hooks/courses/useCourseQueries';
 import { CourseGenerateForm } from './CourseGenerateForm';
 import { CourseWorkspace } from './CourseWorkspace';
 import { CourseExampleCards } from './CourseExampleCards';
+import { CourseModelSelector } from './CourseModelSelector';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 export function CourseWorkspaceContent() {
@@ -56,13 +57,16 @@ export function CourseWorkspaceContent() {
           </div>
         ) : showForm ? (
           <div className="space-y-6 p-4 sm:p-6">
-            <div>
-              <h1 className="font-heading text-2xl font-semibold text-foreground">
-                Create learning path
-              </h1>
-              <p className="mt-1 text-sm text-muted">
-                Generate a personalized course, then continue it from history anytime.
-              </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h1 className="font-heading text-2xl font-semibold text-foreground">
+                  Create learning path
+                </h1>
+                <p className="mt-1 text-sm text-muted">
+                  Generate a personalized course, then continue it from history anytime.
+                </p>
+              </div>
+              <CourseModelSelector compact menuPlacement="below" className="shrink-0 self-start" />
             </div>
             <div>
               <h2 className="font-heading text-sm font-semibold text-foreground">Quick topics</h2>

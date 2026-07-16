@@ -11,7 +11,7 @@ import {
 } from '@/services/api/hackerrankAnalyzeAdaptive';
 import { APP_EVENTS } from '@/utils/events';
 import { storage } from '@/utils/storage';
-import { ApiRequestError } from '@/utils/apiError';
+import { ApiRequestError, isAbortError } from '@/utils/apiError';
 import { useHackerRankChatStore } from '@/store/hackerrankChatStore';
 import { ModelSelector } from './ModelSelector';
 import { useInvalidateHackerRankQueries } from '@/hooks/hackerrank/useHackerRankMutations';
@@ -123,7 +123,7 @@ export const HackerRankHero = forwardRef<HackerRankHeroHandle>(
           invalidateAll();
           toast.success('Analysis ready. Review the report pages.');
         } catch (err) {
-          if (err instanceof DOMException && err.name === 'AbortError') return;
+          if (isAbortError(err)) return;
 
           let message = 'Failed to analyze. Please try again.';
           if (err instanceof ApiRequestError) {
@@ -139,7 +139,7 @@ export const HackerRankHero = forwardRef<HackerRankHeroHandle>(
           setError(message);
           toast.error(message);
           if (process.env.NODE_ENV !== 'production') {
-            console.error('[HackerRank][Analyze] error', err);
+            console.warn('[HackerRank][Analyze] error:', message);
           }
         } finally {
           setIsLoading(false);

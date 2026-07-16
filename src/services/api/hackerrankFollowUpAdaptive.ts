@@ -1,7 +1,7 @@
 import { config } from '@/config';
 import { getHackerRankApiBase } from '@/utils/hackerrankApiBase';
 import { storage } from '@/utils/storage';
-import { createApiRequestError } from '@/utils/apiError';
+import { createApiRequestError, createNetworkFetchError, isAbortError } from '@/utils/apiError';
 import type { HackerRankFollowUpRequest, HackerRankStreamEvent } from '@/types/hackerrank';
 import { processStreamResponse } from './streaming';
 
@@ -24,17 +24,37 @@ export async function hackerrankFollowUpAdaptive(
     (headers as Record<string, string>).Authorization = `Bearer ${accessToken}`;
   }
 
-  const res = await fetch(`${getHackerRankApiBase()}/hackerrank/follow-up`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      session_id: data.session_id,
-      question: data.question,
-      mode_id: data.mode_id,
-      model: data.model ?? data.model_id,
-    }),
-    signal,
-  });
+  const apiBase = getHackerRankApiBase();
+  const primary = `${apiBase}/chat/hackerrank/follow-up`;
+  const alias = `${apiBase}/hackerrank/follow-up`;
+  const body = {
+    session_id: data.session_id,
+    question: data.question,
+    mode_id: data.mode_id ?? null,
+    model: data.model ?? data.model_id ?? null,
+  };
+
+  let res: Response;
+  try {
+    res = await fetch(primary, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      signal,
+    });
+    if (res.status === 404) {
+      await res.text().catch(() => '');
+      res = await fetch(alias, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+        signal,
+      });
+    }
+  } catch (err) {
+    if (isAbortError(err)) throw err;
+    throw createNetworkFetchError(apiBase, err);
+  }
 
   if (!res.ok) {
     const detail = await res.text();

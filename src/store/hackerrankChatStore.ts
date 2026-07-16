@@ -13,6 +13,12 @@ import {
   type NormalizedAnalyzeResult,
   type ReportPage,
 } from '@/utils/hackerrankSession';
+import type { FollowUpUiMessage } from '@/types/followUpChat';
+import {
+  clearFollowUpConversation,
+  loadFollowUpConversation,
+  saveFollowUpConversation,
+} from '@/utils/followUpConversationStorage';
 
 interface HackerRankChatState {
   activeSessionId: string | null;
@@ -30,6 +36,7 @@ interface HackerRankChatState {
   defaultModeId: string;
   selectedModeId: string | null;
   statsDrawerOpen: boolean;
+  conversation: FollowUpUiMessage[];
 
   startNewChat: () => void;
   setActiveSessionId: (sessionId: string | null) => void;
@@ -45,6 +52,9 @@ interface HackerRankChatState {
   applyFollowUpResult: (payload: unknown) => void;
   applyStreamEvent: (event: HackerRankStreamEvent) => void;
   hydrateFromSession: (result: NormalizedAnalyzeResult, defaultModelId?: string | null) => void;
+  appendConversationMessage: (message: FollowUpUiMessage) => void;
+  updateConversationMessage: (id: string, patch: Partial<FollowUpUiMessage>) => void;
+  resetConversationForNewAnalysis: () => void;
 }
 
 const emptyRoles = (): Record<HackerRankAgentRole, string> => ({
@@ -71,6 +81,7 @@ const initialState = {
   defaultModeId: 'learning',
   selectedModeId: null as string | null,
   statsDrawerOpen: false,
+  conversation: [] as FollowUpUiMessage[],
 };
 
 export const useHackerRankChatStore = create<HackerRankChatState>((set, get) => ({
@@ -83,6 +94,7 @@ export const useHackerRankChatStore = create<HackerRankChatState>((set, get) => 
       defaultModeId: get().defaultModeId,
       selectedModeId: get().selectedModeId,
       statsDrawerOpen: false,
+      conversation: [],
     }),
 
   setActiveSessionId: (activeSessionId) => set({ activeSessionId }),
@@ -103,9 +115,30 @@ export const useHackerRankChatStore = create<HackerRankChatState>((set, get) => 
 
   setStatsDrawerOpen: (statsDrawerOpen) => set({ statsDrawerOpen }),
 
-  hydrateFromSession: (result, defaultModelId?: string | null) =>
+  appendConversationMessage: (message) =>
+    set((state) => {
+      const conversation = [...state.conversation, message];
+      saveFollowUpConversation('hackerrank', state.activeSessionId, conversation);
+      return { conversation };
+    }),
+
+  updateConversationMessage: (id, patch) =>
+    set((state) => {
+      const conversation = state.conversation.map((m) => (m.id === id ? { ...m, ...patch } : m));
+      saveFollowUpConversation('hackerrank', state.activeSessionId, conversation);
+      return { conversation };
+    }),
+
+  resetConversationForNewAnalysis: () => {
+    const sessionId = get().activeSessionId;
+    clearFollowUpConversation('hackerrank', sessionId);
+    set({ conversation: [] });
+  },
+
+  hydrateFromSession: (result, defaultModelId?: string | null) => {
+    const sessionId = result.session.session_id;
     set({
-      activeSessionId: result.session.session_id,
+      activeSessionId: sessionId,
       session: result.session,
       problemStatement: result.problemStatement,
       problemStatementMarkdown: result.problemStatementMarkdown,
@@ -117,9 +150,16 @@ export const useHackerRankChatStore = create<HackerRankChatState>((set, get) => 
       selectedModeId: result.session.mode_id ?? get().defaultModeId,
       isAnalyzing: false,
       isStreaming: false,
-    }),
+      conversation: loadFollowUpConversation('hackerrank', sessionId),
+    });
+  },
 
-  applyAnalyzeResult: (result) =>
+  applyAnalyzeResult: (result) => {
+    const previousId = get().activeSessionId;
+    if (previousId && previousId !== result.session.session_id) {
+      clearFollowUpConversation('hackerrank', previousId);
+    }
+    clearFollowUpConversation('hackerrank', result.session.session_id);
     set({
       activeSessionId: result.session.session_id,
       session: result.session,
@@ -133,7 +173,9 @@ export const useHackerRankChatStore = create<HackerRankChatState>((set, get) => 
       selectedModeId: result.session.mode_id ?? get().defaultModeId,
       isAnalyzing: false,
       isStreaming: false,
-    }),
+      conversation: [],
+    });
+  },
 
   applyFollowUpResult: (payload) => {
     const state = get();

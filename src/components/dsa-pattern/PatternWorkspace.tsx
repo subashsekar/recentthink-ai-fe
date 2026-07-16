@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { ChevronDown, Loader2, Trash2 } from 'lucide-react';
@@ -13,6 +13,7 @@ import { cn } from '@/utils/cn';
 import { useDsaPatternStore } from '@/store/dsaPatternStore';
 import type { PatternHistoryDetail } from '@/types/dsaPattern';
 import { PatternExportMenu } from './PatternExportMenu';
+import { PatternModelSelector } from './PatternModelSelector';
 import { OverviewTab } from './tabs/OverviewTab';
 import { MentalModelTab } from './tabs/MentalModelTab';
 import { RecognitionTab } from './tabs/RecognitionTab';
@@ -52,6 +53,7 @@ export function PatternWorkspace({ lesson }: PatternWorkspaceProps) {
   const { data: dashboard } = useDsaPatternDashboard();
   const [tab, setTab] = useState<TabId>('recognition');
   const [traceOpen, setTraceOpen] = useState(false);
+  const followUpRef = useRef<HTMLDivElement>(null);
   const deletePattern = useDeletePatternMutation();
 
   const patternSessionId = lesson.pattern_session_id || lesson.progress?.pattern_session_id || '';
@@ -87,6 +89,13 @@ export function PatternWorkspace({ lesson }: PatternWorkspaceProps) {
     });
   }, [lesson]);
 
+  const openFollowUp = () => {
+    setTab('chat');
+    window.requestAnimationFrame(() => {
+      followUpRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
   const onDelete = async () => {
     if (!lesson.session_id) return;
     if (!window.confirm('Delete this pattern lesson from history?')) return;
@@ -118,7 +127,8 @@ export function PatternWorkspace({ lesson }: PatternWorkspaceProps) {
             <p className="mt-1 text-sm text-muted">{meta || 'Pattern lesson'}</p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <PatternModelSelector compact menuPlacement="below" />
             <PatternExportMenu patternSessionId={patternSessionId} />
             <Button
               size="sm"
@@ -147,7 +157,10 @@ export function PatternWorkspace({ lesson }: PatternWorkspaceProps) {
             <button
               key={item.id}
               type="button"
-              onClick={() => setTab(item.id)}
+              onClick={() => {
+                if (item.id === 'chat') openFollowUp();
+                else setTab(item.id);
+              }}
               className={cn(
                 'shrink-0 rounded-xl px-3 py-2 text-sm font-medium transition-colors',
                 tab === item.id
@@ -173,7 +186,15 @@ export function PatternWorkspace({ lesson }: PatternWorkspaceProps) {
           {tab === 'practice' && <PracticeTab lesson={lesson} />}
           {tab === 'quiz' && <QuizTab lesson={lesson} />}
           {tab === 'next' && <NextPatternTab lesson={lesson} />}
-          {tab === 'chat' && <ChatTab lesson={lesson} />}
+          {tab === 'chat' && (
+            <p className="text-sm text-muted">
+              Follow-up chat stays scoped to this pattern session — use the composer below.
+            </p>
+          )}
+        </div>
+
+        <div ref={followUpRef} id="pattern-follow-up">
+          <ChatTab key={lesson.session_id ?? 'no-session'} lesson={lesson} variant="panel" />
         </div>
 
         {usage && (
@@ -263,12 +284,7 @@ export function PatternWorkspace({ lesson }: PatternWorkspaceProps) {
           </div>
         )}
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="w-full rounded-xl"
-          onClick={() => setTab('chat')}
-        >
+        <Button size="sm" variant="outline" className="w-full rounded-xl" onClick={openFollowUp}>
           Open follow-up chat
         </Button>
       </aside>

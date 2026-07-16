@@ -83,3 +83,21 @@ export class ApiRequestError extends Error {
 export function createApiRequestError(status: number, bodyText: string): ApiRequestError {
   return new ApiRequestError(status, bodyText, parseApiErrorMessage(status, bodyText));
 }
+
+export function isAbortError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const name = 'name' in err ? String((err as { name?: unknown }).name ?? '') : '';
+  if (name === 'AbortError') return true;
+  if (err instanceof DOMException && err.name === 'AbortError') return true;
+  return false;
+}
+
+/** Turn browser TypeError "Failed to fetch" into an actionable API error. */
+export function createNetworkFetchError(baseUrl: string, err: unknown): ApiRequestError {
+  const reason = err instanceof Error ? err.message : 'Network request failed';
+  const message =
+    reason === 'Failed to fetch' || reason === 'NetworkError when attempting to fetch resource.'
+      ? `Cannot reach the API at ${baseUrl}. Check that the gateway is running and reachable.`
+      : reason;
+  return new ApiRequestError(0, reason, message);
+}

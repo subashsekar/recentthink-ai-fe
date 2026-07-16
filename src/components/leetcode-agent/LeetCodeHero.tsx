@@ -9,7 +9,7 @@ import { config } from '@/config';
 import { analyzeAdaptive, parseJsonAnalyzePayload } from '@/services/api/analyzeAdaptive';
 import { APP_EVENTS } from '@/utils/events';
 import { storage } from '@/utils/storage';
-import { ApiRequestError } from '@/utils/apiError';
+import { ApiRequestError, isAbortError } from '@/utils/apiError';
 import { useChatStore } from '@/store/chatStore';
 import { ModelSelector } from './ModelSelector';
 import { useInvalidateLeetCodeQueries } from '@/hooks/leetcode/useLeetCodeMutations';
@@ -136,7 +136,7 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
         invalidateAll();
         toast.success('Analysis ready. Review the report and ask follow-ups below.');
       } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (isAbortError(err)) return;
 
         let message = 'Failed to analyze. Please try again.';
         if (err instanceof ApiRequestError) {
@@ -152,7 +152,8 @@ export const LeetCodeHero = forwardRef<LeetCodeHeroHandle>(function LeetCodeHero
         setError(message);
         toast.error(message);
         if (process.env.NODE_ENV !== 'production') {
-          console.error('[LeetCode][Analyze] error', err);
+          // Log as string — console.error(Error) opens the Next.js dev overlay.
+          console.warn('[LeetCode][Analyze] error:', message);
         }
       } finally {
         setIsLoading(false);

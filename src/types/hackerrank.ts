@@ -1,10 +1,11 @@
 export type HackerRankAgentRole = 'planner' | 'teacher' | 'coder' | 'evaluator' | 'code_explainer';
 
 export interface HackerRankAnalyzeRequest {
-  problem_url?: string;
-  problem_statement?: string;
-  model_id?: string;
-  mode_id?: string;
+  problem_url?: string | null;
+  problem_statement?: string | null;
+  title?: string | null;
+  model_id?: string | null;
+  mode_id?: string | null;
 }
 
 export interface HackerRankFollowUpRequest {

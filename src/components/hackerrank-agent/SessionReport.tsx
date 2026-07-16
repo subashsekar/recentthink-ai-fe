@@ -12,6 +12,7 @@ import {
   exportSessionReportPdf,
 } from '@/utils/exportHackerRankReportPdf';
 import { ReportContent } from '@/components/leetcode-agent/ReportContent';
+import { hackerrankApi } from '@/services/api/hackerrank';
 
 export function SessionReport() {
   const currentPage = useHackerRankChatStore((s) => s.currentPage);
@@ -68,6 +69,23 @@ export function SessionReport() {
 
     setIsExporting(true);
     try {
+      const sessionId = session?.session_id;
+      if (sessionId) {
+        try {
+          const blob = await hackerrankApi.exportPdf(sessionId);
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${(session?.title || 'hackerrank-report').replace(/[^\w.-]+/g, '_')}.pdf`;
+          a.click();
+          URL.revokeObjectURL(url);
+          toast.success('PDF downloaded.');
+          return;
+        } catch {
+          // Backend export may be unavailable — fall back to client PDF.
+        }
+      }
+
       const problem = getProblemContent();
       const pdfData = buildSessionReportPdfData({
         title: session?.title ?? 'HackerRank Analysis',

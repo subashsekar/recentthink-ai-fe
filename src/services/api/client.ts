@@ -56,7 +56,7 @@ export const gatewayClient: AxiosInstance = axios.create({
   },
 });
 
-// HackerRank mentor routes may hit gateway or direct AI service (see NEXT_PUBLIC_HACKERRANK_SERVICE_URL).
+// HackerRank mentor routes go through the gateway (`/hackerrank/*`), same as LeetCode.
 export const hackerrankClient: AxiosInstance = axios.create({
   baseURL: hackerrankBase,
   timeout: config.api.timeout,

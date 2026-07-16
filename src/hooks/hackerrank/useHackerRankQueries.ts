@@ -2,20 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { hackerrankApi } from '@/services/api/hackerrank';
-import { getAiModels } from '@/services/api/models';
-import { useAuthStore } from '@/store/authStore';
-import { sortModels } from '@/utils/leetcodeModels';
 import { hackerrankKeys } from './queryKeys';
-import type { ModelsResponse } from '@/types/ai-models';
 import type { ModeInfo } from '@/types/hackerrank';
 
-function normalizeModelsResponse(data: ModelsResponse): ModelsResponse {
-  const models = sortModels(data.models.filter((m) => m.enabled));
-  return {
-    default_model: data.default_model,
-    models,
-  };
-}
+export { useAiModels } from '@/hooks/useAiModels';
 
 export function useHackerRankHistory(params?: { limit?: number; offset?: number; q?: string }) {
   return useQuery({
@@ -74,17 +64,5 @@ export function useHackerRankExamples() {
   return useQuery({
     queryKey: hackerrankKeys.examples(),
     queryFn: () => hackerrankApi.getExamples(),
-  });
-}
-
-export function useAiModels() {
-  const accessToken = useAuthStore((s) => s.accessToken);
-
-  return useQuery({
-    queryKey: hackerrankKeys.models(),
-    queryFn: () => getAiModels(accessToken!),
-    enabled: Boolean(accessToken),
-    staleTime: 5 * 60 * 1000,
-    select: normalizeModelsResponse,
   });
 }

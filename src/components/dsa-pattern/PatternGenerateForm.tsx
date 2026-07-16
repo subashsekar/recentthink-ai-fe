@@ -18,6 +18,7 @@ import {
 } from '@/types/dsaPattern';
 import { PatternGeneratingState } from './PatternGeneratingState';
 import { PatternModelSelector } from './PatternModelSelector';
+import { useResolvedModelId } from '@/hooks/useAiModels';
 import { cn } from '@/utils/cn';
 
 export function PatternGenerateForm({ embedded = false }: { embedded?: boolean }) {
@@ -31,6 +32,7 @@ export function PatternGenerateForm({ embedded = false }: { embedded?: boolean }
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestRef = useRef<HTMLDivElement>(null);
+  const effectiveModelId = useResolvedModelId(form.model_id);
 
   useEffect(() => {
     if (!showSuggestions) return;
@@ -64,7 +66,7 @@ export function PatternGenerateForm({ embedded = false }: { embedded?: boolean }
       const lesson = await generate.mutateAsync({
         ...form,
         pattern: form.pattern.trim(),
-        model_id: form.model_id || null,
+        model_id: effectiveModelId,
         mode_id: form.mode_id || null,
       });
 
@@ -179,19 +181,12 @@ export function PatternGenerateForm({ embedded = false }: { embedded?: boolean }
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">Model (optional)</label>
-          <PatternModelSelector />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <PatternModelSelector compact disabled={generate.isPending} menuPlacement="above" />
+          <Button type="submit" size="lg" className="rounded-2xl" isLoading={generate.isPending}>
+            Generate Pattern Lesson
+          </Button>
         </div>
-
-        <Button
-          type="submit"
-          size="lg"
-          className="w-full rounded-2xl"
-          isLoading={generate.isPending}
-        >
-          Generate Pattern Lesson
-        </Button>
       </form>
     </div>
   );

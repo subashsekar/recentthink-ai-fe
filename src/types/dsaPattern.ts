@@ -262,6 +262,8 @@ export interface PatternFollowUpResponse {
   total_tokens?: number;
   latency_ms?: number;
   execution_time_ms?: number;
+  context_match?: boolean;
+  rejected?: boolean;
   [key: string]: unknown;
 }
 
@@ -289,6 +291,9 @@ export interface PatternHistoryMessage {
   content: string;
   message?: string;
   created_at: string;
+  intent?: string;
+  rejected?: boolean;
+  context_match?: boolean;
 }
 
 export interface PatternHistoryListResponse {
@@ -318,6 +323,10 @@ export interface PatternChatMessage {
   agent_name?: string | null;
   content: string;
   created_at: string;
+  intent?: string;
+  rejected?: boolean;
+  context_match?: boolean;
+  isStreaming?: boolean;
 }
 
 export interface PatternProgressUpdateRequest {

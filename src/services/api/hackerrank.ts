@@ -12,9 +12,22 @@ import type {
 import { hackerrankClient } from './client';
 import { streamHackerRank } from './streaming-hackerrank';
 
+function analyzeBody(data: HackerRankAnalyzeRequest) {
+  return {
+    problem_url: data.problem_url ?? null,
+    problem_statement: data.problem_statement ?? null,
+    title: data.title ?? null,
+    model_id: data.model_id ?? null,
+    mode_id: data.mode_id ?? null,
+  };
+}
+
 export const hackerrankApi = {
   analyze: async (data: HackerRankAnalyzeRequest) => {
-    const res = await hackerrankClient.post<HackerRankSessionDetail>('/hackerrank/analyze', data);
+    const res = await hackerrankClient.post<HackerRankSessionDetail>(
+      '/hackerrank/analyze',
+      analyzeBody(data),
+    );
     return res.data;
   },
 
@@ -23,15 +36,19 @@ export const hackerrankApi = {
     onEvent: (evt: HackerRankStreamEvent) => void,
     signal?: AbortSignal,
   ) => {
-    await streamHackerRank('/hackerrank/analyze', { method: 'POST', body: data, signal }, onEvent);
+    await streamHackerRank(
+      '/hackerrank/analyze?stream=true',
+      { method: 'POST', body: analyzeBody(data), signal },
+      onEvent,
+    );
   },
 
   followUp: async (data: HackerRankFollowUpRequest) => {
     const res = await hackerrankClient.post<HackerRankSessionDetail>('/hackerrank/follow-up', {
       session_id: data.session_id,
       question: data.question,
-      mode_id: data.mode_id,
-      model: data.model ?? data.model_id,
+      mode_id: data.mode_id ?? null,
+      model: data.model ?? data.model_id ?? null,
     });
     return res.data;
   },
@@ -43,9 +60,23 @@ export const hackerrankApi = {
   ) => {
     await streamHackerRank(
       '/hackerrank/follow-up',
-      { method: 'POST', body: data, signal },
+      {
+        method: 'POST',
+        body: {
+          session_id: data.session_id,
+          question: data.question,
+          mode_id: data.mode_id ?? null,
+          model: data.model ?? data.model_id ?? null,
+        },
+        signal,
+      },
       onEvent,
     );
+  },
+
+  getAgents: async () => {
+    const res = await hackerrankClient.get<unknown>('/hackerrank/agents');
+    return res.data;
   },
 
   getHistory: async (params?: { limit?: number; offset?: number; q?: string }) => {
@@ -98,6 +129,38 @@ export const hackerrankApi = {
 
   getExamples: async () => {
     const res = await hackerrankClient.get<HackerRankExamplesItem[]>('/hackerrank/examples');
+    return res.data;
+  },
+
+  getVersions: async (sessionId: string) => {
+    const res = await hackerrankClient.get<unknown>(`/hackerrank/sessions/${sessionId}/versions`);
+    return res.data;
+  },
+
+  exportMarkdown: async (sessionId: string) => {
+    const res = await hackerrankClient.post<Blob>(
+      '/hackerrank/export/markdown',
+      { session_id: sessionId },
+      { responseType: 'blob' },
+    );
+    return res.data;
+  },
+
+  exportJson: async (sessionId: string) => {
+    const res = await hackerrankClient.post<Blob>(
+      '/hackerrank/export/json',
+      { session_id: sessionId },
+      { responseType: 'blob' },
+    );
+    return res.data;
+  },
+
+  exportPdf: async (sessionId: string) => {
+    const res = await hackerrankClient.post<Blob>(
+      '/hackerrank/export/pdf',
+      { session_id: sessionId },
+      { responseType: 'blob' },
+    );
     return res.data;
   },
 };
